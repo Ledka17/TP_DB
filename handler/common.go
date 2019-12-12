@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"TP_DB/forum"
-	"TP_DB/model"
 	"encoding/json"
+	"github.com/Ledka17/TP_DB/forum"
+	"github.com/Ledka17/TP_DB/model"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"TP_DB/forum/repository"
-	"TP_DB/handler"
+	"github.com/Ledka17/TP_DB/forum/repository"
+	"github.com/Ledka17/TP_DB/handler"
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"

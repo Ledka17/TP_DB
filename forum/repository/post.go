@@ -1,6 +1,6 @@
 package repository
 
-import "TP_DB/model"
+import "github.com/Ledka17/TP_DB/model"
 
 func (r *DatabaseRepository) IsPostInDB(id int) bool {
 	// TODO

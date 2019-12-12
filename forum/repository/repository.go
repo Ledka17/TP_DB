@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"TP_DB/forum"
+	"github.com/Ledka17/TP_DB/forum"
 	"github.com/jmoiron/sqlx"
 	"log"
 )

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"TP_DB/model"
+	"github.com/Ledka17/TP_DB/model"
 )
 
 func (r *DatabaseRepository) IsForumInDB(slug string) bool {

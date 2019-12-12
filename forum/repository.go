@@ -1,6 +1,6 @@
 package forum
 
-import "TP_DB/model"
+import "github.com/Ledka17/TP_DB/model"
 
 type Repository interface {
 	IsForumInDB(slug string) bool

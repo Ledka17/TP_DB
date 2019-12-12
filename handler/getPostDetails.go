@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"TP_DB/model"
 	"encoding/json"
+	"github.com/Ledka17/TP_DB/model"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
