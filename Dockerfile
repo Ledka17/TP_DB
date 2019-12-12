@@ -35,17 +35,12 @@ RUN /etc/init.d/postgresql start &&\
 # database are possible.
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 
-# Expose the PostgreSQL port
+# Объявлем порт сервера и  PostgreSQL
 EXPOSE 5432
+EXPOSE 5000
 
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
-
-# Back to the root user
-USER root
-
-# Объявлем порт сервера
-EXPOSE 5000
 
 # Запускаем PostgreSQL и сервер
 CMD service postgresql start && ./main --scheme=http --port=5000 --host=0.0.0.0 --database=postgres://docker:docker@localhost/docker
