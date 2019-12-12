@@ -4,6 +4,7 @@ import (
 	"TP_DB/forum/repository"
 	"TP_DB/handler"
 	"github.com/gorilla/mux"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
