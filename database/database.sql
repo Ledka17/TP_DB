@@ -1,4 +1,4 @@
-create if not exists table "user"
+create table if not exists "user"
 (
     id            int       not null primary key,
     email         varchar   not null,
@@ -7,19 +7,19 @@ create if not exists table "user"
     about         varchar   not null
 );
 
-create if not exists table "forum"
+create table if not exists "forum"
 (
     id         int         not null primary key,
     posts      int         not null,
     threads    int         not null,
     title      varchar     not null,
     slug       varchar     not null,
-    user_id    varchar     not null,
+    user_id    int     not null,
 
-    FOREIGN KEY (user_id) REFERENCES user (id)
+    FOREIGN KEY (user_id) REFERENCES "user" (id)
 );
 
-create if not exists table "thread"
+create table if not exists "thread"
 (
     id          int         not null primary key,
     forum_id    int         not null,
@@ -30,11 +30,11 @@ create if not exists table "thread"
     title       varchar     not null,
     votes       int         not null,
 
-    foreign key (forum_id) references forum (id),
-    foreign key (user_id) references user (id)
+    foreign key (forum_id) references "forum" (id),
+    foreign key (user_id) references "user" (id)
 );
 
-create if not exists table "post"
+create table if not exists "post"
 (
     id          int         not null primary key,
     forum_id    int         not null,
@@ -46,16 +46,16 @@ create if not exists table "post"
     isEdited    bool        not null,
     parent      int         not null,
 
-    foreign key (forum_id) references forum (id),
-    foreign key (thread_id) references thread (id),
-    foreign key (user_id) references user (id)
+    foreign key (forum_id) references "forum" (id),
+    foreign key (thread_id) references "thread" (id),
+    foreign key (user_id) references "user" (id)
 );
 
-create if not exists table "vote"
+create table if not exists "vote"
 (
     thread_id   int     not null,
     nickname    varchar not null,
     vote        int,
 
-    foreign key (thread_id) references thread (id)
+    foreign key (thread_id) references "thread" (id)
 );
