@@ -37,6 +37,8 @@ func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since str
 }
 
 func (r *DatabaseRepository) GetForumIdBySlug(slug string) int32 {
-	// TODO
-	return 0
+	var id int32
+	err := r.db.Get(&id, `select id from "`+forumTable+`" where slug=$1 limit 1`, slug)
+	checkErr(err)
+	return id
 }

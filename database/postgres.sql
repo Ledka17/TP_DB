@@ -1,4 +1,4 @@
-CREATE USER forum WITH
+CREATE USER docker WITH
     LOGIN
     NOSUPERUSER
     INHERIT
@@ -6,10 +6,10 @@ CREATE USER forum WITH
     NOCREATEROLE
     NOREPLICATION
     CONNECTION LIMIT -1
-    PASSWORD 'forum';
+    PASSWORD 'docker';
 
-CREATE DATABASE forum
+CREATE DATABASE docker
     WITH
-    OWNER = forum
+    OWNER = docker
     ENCODING = 'UTF8'
     CONNECTION LIMIT = -1;

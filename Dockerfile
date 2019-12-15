@@ -25,11 +25,13 @@ COPY --from=build /usr/src/app/database database
 
 # Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
 # then create a database `docker` owned by the ``docker`` role.
-RUN /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-    createdb -O docker docker &&\
+#RUN /etc/init.d/postgresql start &&\
+RUN service postgresql start &&\
+    #psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
+    #createdb -O docker docker &&\
+    psql --file=database/postgres.sql &&\
     psql --file=database/database.sql &&\
-    /etc/init.d/postgresql stop
+    service postgresql stop
 
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible.
