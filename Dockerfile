@@ -36,6 +36,7 @@ RUN service postgresql start &&\
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible.
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 # Объявлем порт сервера и  PostgreSQL
 EXPOSE 5432
@@ -45,4 +46,5 @@ EXPOSE 5000
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Запускаем PostgreSQL и сервер
-CMD service postgresql start && ./main --scheme=http --port=5000 --host=0.0.0.0 --database=postgres://docker:docker@localhost/docker
+CMD service postgresql start && ./main
+#--scheme=http --port=5000 --host=0.0.0.0 --database=postgres://docker:docker@localhost/docker

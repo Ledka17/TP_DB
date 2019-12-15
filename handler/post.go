@@ -45,3 +45,4 @@ func (h *DataBaseHandler) PostDetailsHandler(w http.ResponseWriter, r *http.Requ
 	}
 	w.WriteHeader(400)
 }
+
