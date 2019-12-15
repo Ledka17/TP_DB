@@ -3,17 +3,19 @@ package model
 import "time"
 
 type Thread struct {
-	Author		string
-	Created		time.Time
-	Forum		string
-	Id			int32
-	Message		string
-	Slug		string
-	Title		string
-	Votes		int32
+	Author		string		`db:"-" json:"author"`
+	UserId		string		`db:"user_id" json:"-"`
+	Created		time.Time	`db:"created" json:"created"`
+	Forum		string		`db:"-" json:"forum"`
+	ForumId		string		`db:"forum_id" json:"-"`
+	Id			int32		`db:"id" json:"id"`
+	Message		string		`db:"message" json:"message"`
+	Slug		string		`db:"slug" json:"slug"`
+	Title		string		`db:"title" json:"title"`
+	Votes		int32		`db:"votes" json:"votes"`
 }
 
 type ThreadUpdate struct {
-	Message	string
-	Title	string
+	Message	string			`json:"message"`
+	Title	string			`json:"title"`
 }

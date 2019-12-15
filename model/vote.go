@@ -1,6 +1,6 @@
 package model
 
 type Vote struct {
-	Nickname	string
-	Voice		int32
+	Nickname	string	`db:"nickname" json:"nickname"`
+	Voice		int32	`db:"voice" json:"voice"`
 }

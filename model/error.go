@@ -1,5 +1,5 @@
 package model
 
 type Error struct {
-	Message string
+	Message string	`json:"message"`
 }
