@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Ledka17/TP_DB/forum/repository"
 	"github.com/Ledka17/TP_DB/handler"
 	"github.com/gorilla/mux"
@@ -9,11 +10,15 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-	"os"
 )
 
-var (
+const (
 	PORT = "5000"
+	host     = "localhost"
+	port     = 5432
+	user     = "docker"
+	password = "docker"
+	dbname   = "docker"
 )
 
 func main() {
@@ -29,7 +34,10 @@ func main() {
 }
 
 func newDB() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("pgx", os.Getenv("POSTGRES_DSN"))
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s",
+		host, port, user, password, dbname)
+	db, err := sqlx.Connect("pgx", psqlInfo)
 	if err != nil {
 		return nil, err
 	}

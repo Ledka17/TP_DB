@@ -6,20 +6,12 @@ import (
 )
 
 func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
-	var countSlug int
-	err := r.db.Get(&countSlug, `select count(*) from "`+threadTable+`" where slug=$1`, slugOrId)
+	var count int
+	err := r.db.Get(&count, `select count(*) from "`+threadTable+`" where slug=$1 or id=$1`, slugOrId)
 	checkErr(err)
-	if countSlug != 0 {
+	if count > 0 {
 		return true
 	}
-
-	var countId int
-	err = r.db.Get(&countId, `select count(*) from "`+threadTable+`" where id=$1`, slugOrId)
-	checkErr(err)
-	if countId != 0 {
-		return true
-	}
-
 	return false
 }
 
@@ -39,28 +31,36 @@ func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thread) model.Thread {
 	thread.Forum = forumSlug
 	thread.Created = time.Now()
-	thread.Votes = 0
-	thread.Id = r.GetNextThreadId()
-	forumId := r.GetForumIdBySlug(forumSlug)
+	thread.ForumId = r.GetForumIdBySlug(forumSlug)
 
 	_, err := r.db.Exec(`insert into "`+threadTable+
-		`" (title, slug, author, message, votes, created, forum_id, id) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		thread.Title, thread.Slug, thread.Author, thread.Message, thread.Votes, thread.Created, forumId, thread.Id)
+		`" (title, slug, author, message, created, forum_id) values ($1, $2, $3, $4, $5, $6)`,
+		thread.Title, thread.Slug, thread.Author, thread.Message, thread.Created, thread.ForumId)
 	checkErr(err)
-	return model.Thread{}
+	r.incForumDetails("threads", thread.ForumId)
+	return thread
 }
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
-	// TODO
-	return []model.Thread{}
+	threads := make([]model.Thread, 0, limit)
+	forumId := r.GetForumIdBySlug(forumSlug)
+	order := getOrder(desc)
+	filterLimit := getFilterLimit(limit)
+	filterSince := getFilterSince(order, since)
+
+	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
+		forumId, since, order,
+	)
+	checkErr(err)
+	return threads
 }
 
 func (r *DatabaseRepository) CheckParentPost(posts []model.Post) bool {
 	// TODO
-	var parents, children []int64
-	for _, parent := range posts { // выгружаем всех родителей и детей
-		parents = append(parents, parent.Parent)
-		children = append(children, parent.Id)
+	var parentsForCheck, children []int64
+	for _, post := range posts { // выгружаем всех родителей и детей
+		parentsForCheck = append(parentsForCheck, post.Parent)
+		children = append(children, post.Id)
 	}
 	//for _, child := range children { // проверяем есть у ребенка родитель
 	//}
@@ -77,11 +77,4 @@ func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, s
 	)
 	checkErr(err)
 	return thread
-}
-
-func (r *DatabaseRepository) GetNextThreadId() int32 {
-	var nextId int32 = -1
-	err := r.db.Get(&nextId, `select max(id) from "`+threadTable)
-	checkErr(err)
-	return nextId + 1
 }

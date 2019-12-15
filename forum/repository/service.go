@@ -3,11 +3,8 @@ package repository
 import "github.com/Ledka17/TP_DB/model"
 
 func (r *DatabaseRepository) CleanUp()  {
-	r.deleteTable(forumTable)
-	r.deleteTable(voteTable)
-	r.deleteTable(threadTable)
-	r.deleteTable(userTable)
-	r.deleteTable(postTable)
+	_, err := r.db.Exec(`truncate "$1", "$2", "$3", "$4", "$5"`, forumTable, postTable, forumTable, userTable, voteTable)
+	checkErr(err)
 }
 
 func (r *DatabaseRepository) GetStatusDB() model.Status {
@@ -18,11 +15,6 @@ func (r *DatabaseRepository) GetStatusDB() model.Status {
 	status.Forum = int32(r.countRecords(forumTable))
 
 	return status
-}
-
-func (r *DatabaseRepository) deleteTable(tableName string) {
-	_, err := r.db.Exec(`delete from "`+tableName)
-	checkErr(err)
 }
 
 func (r *DatabaseRepository) countRecords(tableName string) int64 {
