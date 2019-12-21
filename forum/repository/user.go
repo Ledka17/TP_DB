@@ -1,9 +1,13 @@
 package repository
 
-import "github.com/Ledka17/TP_DB/model"
+import (
+	"github.com/Ledka17/TP_DB/model"
+	"log"
+)
 
 func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	var count int
+	log.Println("user nickname = ", nickname)
 	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where nickname=$1 or email=$2`, nickname, email)
 	checkErr(err)
 	if count != 0 {

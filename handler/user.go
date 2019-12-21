@@ -3,74 +3,46 @@ package handler
 import (
 	"encoding/json"
 	"github.com/Ledka17/TP_DB/model"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/labstack/echo"
 )
 
-func (h *DataBaseHandler) UserProfileHandler(w http.ResponseWriter, r *http.Request) {
-	nickname := mux.Vars(r)["nickname"]
-	if r.Method == "GET" {
-		if h.usecase.IsUserInDB(nickname, "") {
-			body, err := json.Marshal(h.usecase.GetUserInDB(nickname, ""))
-			checkErr(err)
-
-			w.WriteHeader(200)
-			w.Write(body)
-			return
-		}
-		writeWithError(w, 404)
-		return
+func (h *DataBaseHandler) GetUserProfileHandler(c echo.Context) error {
+	nickname := c.Param("nickname")
+	if h.usecase.IsUserInDB(nickname, "") {
+		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
 	}
-	if r.Method == "POST" {
-		decoder := json.NewDecoder(r.Body)
-		var userUpdate model.UserUpdate
-		err := decoder.Decode(&userUpdate)
-		checkErr(err)
-
-		if h.usecase.IsUserInDB(nickname, "") {
-			if h.usecase.IsUserInDB("", userUpdate.Email) {
-				writeWithError(w, 409)
-				return
-			}
-			body, err := json.Marshal(h.usecase.GetUserInDB(nickname, ""))
-			checkErr(err)
-
-			w.WriteHeader(200)
-			w.Write(body)
-			return
-		}
-		writeWithError(w, 404)
-
-		return
-	}
-	w.WriteHeader(400)
+	return writeWithError(c, 404)
 }
 
-func (h *DataBaseHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		nickname := mux.Vars(r)["nickname"]
+func (h *DataBaseHandler) ChangeUserProfileHandler(c echo.Context) error {
+	nickname := c.Param("nickname")
+	decoder := json.NewDecoder(c.Request().Body)
+	var userUpdate model.UserUpdate
+	err := decoder.Decode(&userUpdate)
+	checkErr(err)
 
-		decoder := json.NewDecoder(r.Body)
-		var user model.User
-		err := decoder.Decode(&user)
-		checkErr(err)
-
-		if h.usecase.IsUserInDB(nickname, user.Email) {
-			body, err := json.Marshal(h.usecase.GetUserInDB(nickname, user.Email))
-			checkErr(err)
-
-			w.WriteHeader(409)
-			w.Write(body)
-			return
+	if h.usecase.IsUserInDB(nickname, "") {
+		if h.usecase.IsUserInDB("", userUpdate.Email) {
+			return writeWithError(c, 409)
 		}
 
-		body, err := json.Marshal(h.usecase.СreateUserInDB(nickname, user))
-		checkErr(err)
-
-		w.WriteHeader(201)
-		w.Write(body)
-		return
+		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
 	}
-	w.WriteHeader(400)
+	return writeWithError(c, 404)
+}
+
+func (h *DataBaseHandler) CreateUserHandler(c echo.Context) error {
+	nickname := c.Param("nickname")
+
+	decoder := json.NewDecoder(c.Request().Body)
+	var user model.User
+	err := decoder.Decode(&user)
+	checkErr(err)
+
+	if h.usecase.IsUserInDB(nickname, user.Email) {
+		return c.JSON(409, h.usecase.GetUserInDB(nickname, user.Email))
+	}
+
+	return c.JSON(201, h.usecase.СreateUserInDB(nickname, user))
 }
 

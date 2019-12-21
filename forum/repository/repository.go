@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/Ledka17/TP_DB/forum"
 	"github.com/jmoiron/sqlx"
@@ -26,7 +27,7 @@ func NewDatabaseRepository(db *sqlx.DB) forum.Repository {
 }
 
 func checkErr(err error) {
-	if err != nil {
+	if err != sql.ErrNoRows && err != nil {
 		log.Panic(err)
 	}
 }

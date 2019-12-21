@@ -3,106 +3,60 @@ package handler
 import (
 	"encoding/json"
 	"github.com/Ledka17/TP_DB/model"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/labstack/echo"
+	"log"
 	"strconv"
 )
 
-func (h *DataBaseHandler) CreateForumHandler (w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		decoder := json.NewDecoder(r.Body)
-		var forum model.Forum
-		err := decoder.Decode(&forum)
-		checkErr(err)
+func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
+	decoder := json.NewDecoder(c.Request().Body)
+	var forum model.Forum
+	err := decoder.Decode(&forum)
+	checkErr(err)
 
-		statusCode := 201
-		body := []byte("")
+	log.Print(forum)
 
-		if forum.User == "" {
-			statusCode = 404
-			errorRes := model.Error{"Владелец форума не найден."}
-			body, err = json.Marshal(errorRes)
-			checkErr(err)
-		} else {
-			if h.usecase.IsForumInDB(forum.Slug) {
-				statusCode = 409
-				body, err = json.Marshal(h.usecase.GetForumInDB(forum.Slug))
-				checkErr(err)
-			} else {
-				statusCode = 201
-				body, err = json.Marshal(h.usecase.CreateForumInDB(forum))
-				checkErr(err)
-			}
-		}
-
-		w.WriteHeader(statusCode)
-		w.Write(body)
-		return
+	if forum.User == "" || h.usecase.IsUserInDB(forum.User, "") {
+		return c.JSON(404, "User not found")
 	}
-	w.WriteHeader(400)
+	if h.usecase.IsForumInDB(forum.Slug) {
+		return c.JSON(409, h.usecase.GetForumInDB(forum.Slug))
+	}
+	return c.JSON(201, h.usecase.CreateForumInDB(forum))
 }
 
-func (h *DataBaseHandler) GetForumDetailsHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slug := vars["slug"]
-	if r.Method == "GET" {
-		if h.usecase.IsForumInDB(slug) {
-			h.usecase.GetForumInDB(slug)
-			body, err := json.Marshal(h.usecase.GetForumInDB(slug))
-			checkErr(err)
-
-			w.WriteHeader(200)
-			w.Write(body)
-			return
-		}
-		writeWithError(w, 404)
-		return
+func (h *DataBaseHandler) GetForumDetailsHandler(c echo.Context) error {
+	slug := c.Param("slug")
+	if h.usecase.IsForumInDB(slug) {
+		return c.JSON(200, h.usecase.GetForumInDB(slug))
 	}
-	w.WriteHeader(400)
+	return writeWithError(c, 404)
 }
 
-func (h *DataBaseHandler) GetForumThreadsHandler(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
+func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
+	queryParams := c.QueryParams()
 	limit, _ := strconv.Atoi(queryParams["limit"][0])
 	since := queryParams["since"][0]
 	desc, _ := strconv.ParseBool(queryParams["desc"][0])
 
-	slug := mux.Vars(r)["slug"]
+	forumSlug := c.Param("slug")
 
-	if r.Method == "GET" {
-		if h.usecase.IsForumInDB(slug) {
-			body, err := json.Marshal(h.usecase.GetThreadsForumInDB(slug, limit, since, desc))
-			checkErr(err)
-
-			w.WriteHeader(200)
-			w.Write(body)
-			return
-		}
-		writeWithError(w, 404)
-		return
+	if h.usecase.IsForumInDB(forumSlug) {
+		return c.JSON(200, h.usecase.GetThreadsForumInDB(forumSlug, limit, since, desc))
 	}
-	w.WriteHeader(400)
+	return writeWithError(c, 404)
 }
 
-func (h *DataBaseHandler) GetForumUsersHandler(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
+func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
+	queryParams := c.QueryParams()
 	limit, _ := strconv.Atoi(queryParams["limit"][0])
 	since := queryParams["since"][0]
 	desc, _ := strconv.ParseBool(queryParams["desc"][0])
 
-	slug := mux.Vars(r)["slug"]
+	slug := c.Param("slug")
 
-	if r.Method == "GET" {
-		if h.usecase.IsForumInDB(slug) {
-			body, err := json.Marshal(h.usecase.GetForumUsersInDB(slug, limit, since, desc))
-			checkErr(err)
-
-			w.WriteHeader(200)
-			w.Write(body)
-			return
-		}
-		writeWithError(w, 404)
-		return
+	if h.usecase.IsForumInDB(slug) {
+		return c.JSON(200, h.usecase.GetForumUsersInDB(slug, limit, since, desc))
 	}
-	w.WriteHeader(400)
+	return writeWithError(c, 404)
 }

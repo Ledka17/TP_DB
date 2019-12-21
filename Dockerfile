@@ -30,7 +30,7 @@ RUN service postgresql start &&\
     #psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
     #createdb -O docker docker &&\
     psql --file=database/postgres.sql &&\
-    psql --file=database/database.sql &&\
+    psql --file=database/database.sql -d docker &&\
     service postgresql stop
 
 # Adjust PostgreSQL configuration so that remote connections to the
