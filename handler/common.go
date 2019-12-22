@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/Ledka17/TP_DB/forum"
+	"github.com/Ledka17/TP_DB/model"
 	"github.com/labstack/echo"
 	"log"
 )
@@ -42,7 +43,7 @@ func checkErr(err error) {
 	}
 }
 
-func writeWithError(c echo.Context, statusCode int) error {
-	errorRes := "Ошибка."
+func writeWithError(c echo.Context, statusCode int, errMessage string) error {
+	errorRes := model.Error{errMessage}
 	return c.JSON(statusCode, errorRes)
 }

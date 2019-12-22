@@ -15,7 +15,7 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 	if h.usecase.IsPostInDB(id) {
 		return c.JSON(200, h.usecase.GetPostInDB(id, related))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "post not found")
 }
 
 func (h *DataBaseHandler) ChangePostDetailsHandler(c echo.Context) error {
@@ -29,5 +29,5 @@ func (h *DataBaseHandler) ChangePostDetailsHandler(c echo.Context) error {
 
 		return c.JSON(200, h.usecase.ChangePostInDB(id, post))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "post not found")
 }

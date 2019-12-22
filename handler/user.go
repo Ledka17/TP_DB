@@ -11,7 +11,7 @@ func (h *DataBaseHandler) GetUserProfileHandler(c echo.Context) error {
 	if h.usecase.IsUserInDB(nickname, "") {
 		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "user not found")
 }
 
 func (h *DataBaseHandler) ChangeUserProfileHandler(c echo.Context) error {
@@ -23,12 +23,12 @@ func (h *DataBaseHandler) ChangeUserProfileHandler(c echo.Context) error {
 
 	if h.usecase.IsUserInDB(nickname, "") {
 		if h.usecase.IsUserInDB("", userUpdate.Email) {
-			return writeWithError(c, 409)
+			return writeWithError(c, 409, "user already exists")
 		}
 
 		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "user not found")
 }
 
 func (h *DataBaseHandler) CreateUserHandler(c echo.Context) error {
@@ -40,7 +40,7 @@ func (h *DataBaseHandler) CreateUserHandler(c echo.Context) error {
 	checkErr(err)
 
 	if h.usecase.IsUserInDB(nickname, user.Email) {
-		return c.JSON(409, h.usecase.GetUserInDB(nickname, user.Email))
+		return c.JSON(409, h.usecase.GetUsersInDB(nickname, user.Email))
 	}
 
 	return c.JSON(201, h.usecase.СreateUserInDB(nickname, user))

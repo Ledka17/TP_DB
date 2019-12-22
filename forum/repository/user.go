@@ -16,9 +16,16 @@ func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 
 func (r *DatabaseRepository) GetUserInDB(nickname string, email string) model.User {
 	var user model.User
-	err := r.db.Get(&user, `select * from "`+userTable+`" where nickname=$1 or email=$2`, nickname, email)
+	err := r.db.Get(&user, `select * from "`+userTable+`" where nickname=$1 or email=$2 limit 1`, nickname, email)
 	checkErr(err)
 	return user
+}
+
+func (r *DatabaseRepository) GetUsersInDB(nickname string, email string) []model.User {
+	var users []model.User
+	err := r.db.Get(&users, `select * from "`+userTable+`" where nickname=$1 or email=$2`, nickname, email)
+	checkErr(err)
+	return users
 }
 
 func (r *DatabaseRepository) СreateUserInDB(nickname string, user model.User) model.User {

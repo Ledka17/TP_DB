@@ -30,7 +30,7 @@ func (h *DataBaseHandler) GetForumDetailsHandler(c echo.Context) error {
 	if h.usecase.IsForumInDB(slug) {
 		return c.JSON(200, h.usecase.GetForumInDB(slug))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "forum not found")
 }
 
 func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
@@ -44,7 +44,7 @@ func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
 	if h.usecase.IsForumInDB(forumSlug) {
 		return c.JSON(200, h.usecase.GetThreadsForumInDB(forumSlug, limit, since, desc))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "forum not found")
 }
 
 func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
@@ -58,5 +58,5 @@ func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
 	if h.usecase.IsForumInDB(slug) {
 		return c.JSON(200, h.usecase.GetForumUsersInDB(slug, limit, since, desc))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "forum not found")
 }

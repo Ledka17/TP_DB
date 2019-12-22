@@ -15,7 +15,7 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	checkErr(err)
 
 	if thread.Author == "" {
-		return writeWithError(c, 404)
+		return writeWithError(c, 404, "user not found")
 	}
 
 	if h.usecase.IsThreadInDB(thread.Slug) || h.usecase.IsForumInDB(slug) {
@@ -31,16 +31,15 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 	checkErr(err)
 
 	slugOrId := c.Param("slug_or_id")
-	statusCode := 404
 
 	if h.usecase.IsThreadInDB(slugOrId) {
 		if h.usecase.CheckParentPost(posts) {
 			return c.JSON(200, h.usecase.CreatePostsInDB(posts))
 		}
-		statusCode = 409
+		return writeWithError(c, 409, "")
 	}
 
-	return writeWithError(c, statusCode)
+	return writeWithError(c, 404, "thread not found")
 }
 
 func (h *DataBaseHandler) GetThreadDetails(c echo.Context) error {
@@ -50,7 +49,7 @@ func (h *DataBaseHandler) GetThreadDetails(c echo.Context) error {
 		return c.JSON(200, h.usecase.GetThreadInDB(slugOrId))
 	}
 
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "thread not found")
 }
 
 func (h *DataBaseHandler) ChangeThreadDetails(c echo.Context) error {
@@ -64,7 +63,7 @@ func (h *DataBaseHandler) ChangeThreadDetails(c echo.Context) error {
 		return c.JSON(200, h.usecase.ChangeThreadInDB(threadUpdate, slugOrId))
 	}
 
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "thread not found")
 }
 
 func (h *DataBaseHandler) GetThreadPosts(c echo.Context) error {
@@ -78,7 +77,7 @@ func (h *DataBaseHandler) GetThreadPosts(c echo.Context) error {
 	if h.usecase.IsThreadInDB(slugOrId) {
 		return c.JSON(200, h.usecase.GetPostsInDB(slugOrId, limit, since, sort, desc))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "thread not found")
 }
 
 func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
@@ -92,5 +91,5 @@ func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
 
 		return c.JSON(200, h.usecase.VoteForThreadInDB(slugOrId, vote))
 	}
-	return writeWithError(c, 404)
+	return writeWithError(c, 404, "thread not found")
 }
