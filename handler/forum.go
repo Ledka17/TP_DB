@@ -16,7 +16,7 @@ func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
 
 	log.Print(forum)
 
-	if forum.User == "" || h.usecase.IsUserInDB(forum.User, "") {
+	if forum.User == "" || !h.usecase.IsUserInDB(forum.User, "") {
 		return c.JSON(404, "User not found")
 	}
 	if h.usecase.IsForumInDB(forum.Slug) {

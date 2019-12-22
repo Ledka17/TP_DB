@@ -2,12 +2,10 @@ package repository
 
 import (
 	"github.com/Ledka17/TP_DB/model"
-	"log"
 )
 
 func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	var count int
-	log.Println("user nickname = ", nickname)
 	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where nickname=$1 or email=$2`, nickname, email)
 	checkErr(err)
 	if count != 0 {
@@ -24,12 +22,10 @@ func (r *DatabaseRepository) GetUserInDB(nickname string, email string) model.Us
 }
 
 func (r *DatabaseRepository) СreateUserInDB(nickname string, user model.User) model.User {
-	var id int32
 	user.Nickname = nickname
-	err := r.db.QueryRow(`insert into "`+userTable+`" (nickname, email, about, fullname) values ($1, $2, $3, $4) returning id`,
-		user.Nickname, user.Email, user.About, user.Fullname).Scan(&id)
+	_, err := r.db.Exec(`insert into "`+userTable+`" (nickname, email, about, fullname) values ($1, $2, $3, $4)`,
+		user.Nickname, user.Email, user.About, user.Fullname)
 	checkErr(err)
-	user.Id = id
 	return user
 }
 
