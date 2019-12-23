@@ -6,7 +6,7 @@ import (
 
 func (r *DatabaseRepository) IsForumInDB(slug string) bool {
 	var count int
-	err := r.db.Get(&count, `select count(*) from "`+forumTable+`" where slug=$1`, slug)
+	err := r.db.Get(&count, `select count(*) from "`+forumTable+`" where lower(slug)=lower($1)`, slug)
 	checkErr(err)
 	if count == 0 {
 		return false
@@ -16,7 +16,7 @@ func (r *DatabaseRepository) IsForumInDB(slug string) bool {
 
 func (r *DatabaseRepository) GetForumInDB(slug string) model.Forum {
 	forumBySlug := model.Forum{}
-	err := r.db.Get(&forumBySlug, `select * from "`+forumTable+`" where slug=$1`, slug)
+	err := r.db.Get(&forumBySlug, `select * from "`+forumTable+`" where lower(slug)=lower($1)`, slug)
 	checkErr(err)
 	return forumBySlug
 }
@@ -49,7 +49,7 @@ func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since str
 
 func (r *DatabaseRepository) GetForumIdBySlug(slug string) int32 {
 	var id int32
-	err := r.db.Get(&id, `select id from "`+forumTable+`" where slug=$1 limit 1`, slug)
+	err := r.db.Get(&id, `select id from "`+forumTable+`" where lower(slug)=lower($1) limit 1`, slug)
 	checkErr(err)
 	return id
 }

@@ -26,7 +26,7 @@ func (h *DataBaseHandler) ChangeUserProfileHandler(c echo.Context) error {
 			return writeWithError(c, 409, "user already exists")
 		}
 
-		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
+		return c.JSON(200, h.usecase.ChangeUserInDB(nickname, userUpdate))
 	}
 	return writeWithError(c, 404, "user not found")
 }

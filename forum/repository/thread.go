@@ -7,7 +7,7 @@ import (
 
 func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
 	var count int
-	err := r.db.Get(&count, `select count(*) from "`+threadTable+`" where slug=$1 or id=$1`, slugOrId)
+	err := r.db.Get(&count, `select count(*) from "`+threadTable+`" where lower(slug)=lower($1) or id=$1`, slugOrId)
 	checkErr(err)
 	if count > 0 {
 		return true
@@ -17,7 +17,7 @@ func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
 
 func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 	var thread, emptyThread model.Thread
-	err := r.db.Get(&thread, `select * from "`+threadTable+`" where slug=$1`, slugOrId)
+	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1)`, slugOrId)
 	checkErr(err)
 	if thread != emptyThread {
 		return thread
