@@ -14,12 +14,12 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	err := decoder.Decode(&thread)
 	checkErr(err)
 
-	if thread.Author == "" {
+	if thread.Author == "" || !h.usecase.IsUserInDB(thread.Author, "") || !h.usecase.IsForumInDB(slug) {
 		return writeWithError(c, 404, "user not found")
 	}
 
-	if h.usecase.IsThreadInDB(thread.Slug) || h.usecase.IsForumInDB(slug) {
-		return c.JSON(409, h.usecase.GetThreadInDB(slug))
+	if h.usecase.IsThreadInDB(thread.Slug) {
+		return c.JSON(409, h.usecase.GetThreadInDB(thread.Slug))
 	}
 	return c.JSON(201, h.usecase.CreateThreadInDB(slug, thread))
 }
@@ -34,9 +34,9 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 
 	if h.usecase.IsThreadInDB(slugOrId) {
 		if h.usecase.CheckParentPost(posts) {
-			return c.JSON(200, h.usecase.CreatePostsInDB(posts))
+			return c.JSON(201, h.usecase.CreatePostsInDB(posts))
 		}
-		return writeWithError(c, 409, "")
+		return writeWithError(c, 409, "have a conflicts in posts")
 	}
 
 	return writeWithError(c, 404, "thread not found")
@@ -82,14 +82,13 @@ func (h *DataBaseHandler) GetThreadPosts(c echo.Context) error {
 
 func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
 	slugOrId := c.Param("slug_or_id")
+	decoder := json.NewDecoder(c.Request().Body)
+	var vote model.Vote
+	err := decoder.Decode(&vote)
+	checkErr(err)
 
-	if h.usecase.IsThreadInDB(slugOrId) {
-		decoder := json.NewDecoder(c.Request().Body)
-		var vote model.Vote
-		err := decoder.Decode(&vote)
-		checkErr(err)
-
+	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUserInDB(vote.Nickname, "") {
 		return c.JSON(200, h.usecase.VoteForThreadInDB(slugOrId, vote))
 	}
-	return writeWithError(c, 404, "thread not found")
+	return writeWithError(c, 404, "thread or user not found")
 }

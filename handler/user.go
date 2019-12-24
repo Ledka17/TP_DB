@@ -9,7 +9,7 @@ import (
 func (h *DataBaseHandler) GetUserProfileHandler(c echo.Context) error {
 	nickname := c.Param("nickname")
 	if h.usecase.IsUserInDB(nickname, "") {
-		return c.JSON(200, h.usecase.GetUserInDB(nickname, ""))
+		return c.JSON(200, h.usecase.GetUserInDB(nickname))
 	}
 	return writeWithError(c, 404, "user not found")
 }

@@ -18,14 +18,17 @@ func (r *DatabaseRepository) GetForumInDB(slug string) model.Forum {
 	forumBySlug := model.Forum{}
 	err := r.db.Get(&forumBySlug, `select * from "`+forumTable+`" where lower(slug)=lower($1)`, slug)
 	checkErr(err)
+	forumBySlug.User = r.GetUserById(forumBySlug.UserId).Nickname
 	return forumBySlug
 }
 
 func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
-	userId := r.GetUserIdByName(forum.User)
+	user := r.GetUserInDB(forum.User)
+	userId := user.Id
 	_, err := r.db.Exec(`insert into "`+forumTable+`" (slug, title, user_id) values ($1, $2, $3)`,
 		forum.Slug, forum.Title, userId)
 	checkErr(err)
+	forum.User = user.Nickname
 	forum.Posts = 0
 	forum.Treads = 0
 	return forum
@@ -70,8 +73,8 @@ func (r *DatabaseRepository) incForumDetails(field string, id int32) {
 		count = int64(forum.Treads)
 	}
 	_, err := r.db.Exec(
-		`update "`+forumTable+`" set $1=$2 where id=$3`,
-		field, count + 1, id,
+		`update "`+forumTable+`" set `+field+`=$1 where id=$2`,
+		count + 1, id,
 	)
 	checkErr(err)
 }

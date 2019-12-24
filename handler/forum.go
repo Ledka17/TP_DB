@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/Ledka17/TP_DB/model"
 	"github.com/labstack/echo"
-	"log"
 	"strconv"
 )
 
@@ -13,11 +12,8 @@ func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
 	var forum model.Forum
 	err := decoder.Decode(&forum)
 	checkErr(err)
-
-	log.Print(forum)
-
 	if forum.User == "" || !h.usecase.IsUserInDB(forum.User, "") {
-		return c.JSON(404, "User not found")
+		return writeWithError(c, 404, "User not found")
 	}
 	if h.usecase.IsForumInDB(forum.Slug) {
 		return c.JSON(409, h.usecase.GetForumInDB(forum.Slug))

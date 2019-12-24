@@ -19,8 +19,8 @@ type Repository interface {
 
 	IsUserInDB(nickname string, email string) bool
 	ChangeUserInDB(nickname string, userUpdate model.UserUpdate) model.User
-	GetUserInDB(nickname string, email string) model.User
-	GetUsersInDB(nickname string, email string) []model.User
+	GetUserInDB(nickname string) model.User
+	GetUsersInDB(nickname string, email string) []*model.User
 	СreateUserInDB(nickname string, user model.User) model.User
 	GetUserIdByName(nickname string) int32
 

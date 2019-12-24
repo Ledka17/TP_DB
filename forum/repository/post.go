@@ -20,7 +20,7 @@ func (r *DatabaseRepository) GetPostInDB(id int, related []string) model.PostFul
 	post := r.getPostById(id)
 	postFull.Post = post
 	if checkInRelated("user", related) {
-		postFull.Author = r.GetUserInDB(post.Author, "")
+		postFull.Author = r.GetUserInDB(post.Author)
 	}
 	if checkInRelated("forum", related) {
 		postFull.Forum = r.getForumById(post.ForumId)
@@ -60,12 +60,13 @@ func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) mod
 }
 
 func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post) []model.Post {
-	created := time.Now()
+	created := time.Now().Format(time.RFC3339)
 	for _, post := range posts {
 		post.Created = created
 		post.ForumId = r.GetForumIdBySlug(post.Forum)
-		_, err := r.db.Exec(`insert into "`+postTable+`" (id, parent, message, created, author, forum_id, thread) values ($1, $2, $3, $4, $5, $6, $7)`,
-			post.Id, post.Parent, post.Message, post.Created, post.Author, post.ForumId, post.Tread)
+		post.UserId = r.GetUserIdByName(post.Author)
+		_, err := r.db.Exec(`insert into "`+postTable+`" (id, parent, message, created, user_id, forum_id, thread) values ($1, $2, $3, $4, $5, $6)`,
+			post.Id, post.Parent, post.Message, post.Created, post.UserId, post.ForumId)
 		checkErr(err)
 		r.incForumDetails("posts", post.ForumId)
 	}

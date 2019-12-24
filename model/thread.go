@@ -1,11 +1,9 @@
 package model
 
-import "time"
-
 type Thread struct {
 	Author		string		`db:"-" json:"author"`
 	UserId		int32		`db:"user_id" json:"-"`
-	Created		time.Time	`db:"created" json:"created"`
+	Created		string		`db:"created" json:"created"`
 	Forum		string		`db:"-" json:"forum"`
 	ForumId		int32		`db:"forum_id" json:"-"`
 	Id			int32		`db:"id" json:"id"`

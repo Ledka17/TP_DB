@@ -2,13 +2,19 @@ package repository
 
 import (
 	"github.com/Ledka17/TP_DB/model"
-	"time"
+	"strconv"
 )
 
 func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
-	var count int
-	err := r.db.Get(&count, `select count(*) from "`+threadTable+`" where lower(slug)=lower($1) or id=$1`, slugOrId)
-	checkErr(err)
+	count := 0
+	id, err := strconv.Atoi(slugOrId)
+	if err != nil {
+		id = -1
+	}
+	if slugOrId != "" {
+		err := r.db.Get(&count, `select count(*) from "`+threadTable+`" where lower(slug)=lower($1) or id=$2`, slugOrId, id)
+		checkErr(err)
+	}
 	if count > 0 {
 		return true
 	}
@@ -16,26 +22,24 @@ func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
 }
 
 func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
-	var thread, emptyThread model.Thread
-	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1)`, slugOrId)
+	var thread model.Thread
+	id, _ := strconv.Atoi(slugOrId)
+	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) or id=$2 limit 1`, slugOrId, id)
 	checkErr(err)
-	if thread != emptyThread {
-		return thread
-	}
-
-	err = r.db.Get(&thread, `select count(*) from "`+threadTable+`" where id=$1`, slugOrId)
-	checkErr(err)
+	thread.Forum = r.getForumById(thread.ForumId).Slug
+	thread.Author = r.GetUserById(thread.UserId).Nickname
 	return thread
 }
 
 func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thread) model.Thread {
-	thread.Forum = forumSlug
-	thread.Created = time.Now()
-	thread.ForumId = r.GetForumIdBySlug(forumSlug)
+	thread.Forum = r.GetForumInDB(forumSlug).Slug
+	//thread.Created = time.Now()
+	thread.ForumId = r.GetForumIdBySlug(thread.Forum)
+	thread.UserId = r.GetUserInDB(thread.Author).Id
 
-	_, err := r.db.Exec(`insert into "`+threadTable+
-		`" (title, slug, author, message, created, forum_id) values ($1, $2, $3, $4, $5, $6)`,
-		thread.Title, thread.Slug, thread.Author, thread.Message, thread.Created, thread.ForumId)
+	err := r.db.QueryRow(`insert into "`+threadTable+
+		`" (title, slug, user_id, message, created, forum_id) values ($1, $2, $3, $4, $5, $6) returning id`,
+		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId).Scan(&thread.Id)
 	checkErr(err)
 	r.incForumDetails("threads", thread.ForumId)
 	return thread
@@ -62,19 +66,40 @@ func (r *DatabaseRepository) CheckParentPost(posts []model.Post) bool {
 		parentsForCheck = append(parentsForCheck, post.Parent)
 		children = append(children, post.Id)
 	}
-	//for _, child := range children { // проверяем есть у ребенка родитель
-	//}
-	return false
+	for _, parent := range parentsForCheck { // проверяем есть ли родитель
+		if !have(parent, children) && !r.IsThreadInDB(string(parent)) {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, slugOrId string) model.Thread {
 	thread := r.GetThreadInDB(slugOrId)
-	thread.Title = threadUpdate.Title
-	thread.Message = threadUpdate.Message
-	_, err := r.db.Exec(
-		`update "`+threadTable+`" set message=$1, title=$2 where id=$3`,
-		threadUpdate.Message, threadUpdate.Title, thread.Id,
-	)
-	checkErr(err)
+	if threadUpdate.Title != "" {
+		thread.Title = threadUpdate.Title
+		_, err := r.db.Exec(
+			`update "`+threadTable+`" set title=$1 where id=$2`,
+			threadUpdate.Title, thread.Id,
+		)
+		checkErr(err)
+	}
+	if threadUpdate.Message != "" {
+		thread.Message = threadUpdate.Message
+		_, err := r.db.Exec(
+			`update "`+threadTable+`" set message=$1 where id=$2`,
+			threadUpdate.Message, thread.Id,
+		)
+		checkErr(err)
+	}
 	return thread
+}
+
+func have(elem int64, array []int64) bool {
+	for _, current := range array {
+		if current == elem {
+			return true
+		}
+	}
+	return false
 }
