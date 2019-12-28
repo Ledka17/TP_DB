@@ -10,8 +10,7 @@ type Post struct {
 	IsEdited	bool		`db:"isEdited" json:"isEdited"`
 	Message		string		`db:"message" json:"message"`
 	Parent		int64		`db:"parent" json:"parent"`
-	Tread		string		`db:"-" json:"thread"`
-	ThreadId	int32		`db:"thread_id" json:"-"`
+	ThreadId	int32		`db:"thread_id" json:"thread"`
 }
 
 type PostFull struct {

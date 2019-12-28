@@ -42,23 +42,23 @@ func getOrder(desc bool) string {
 func getFilterLimit (limit int) string {
 	filterLimit := ""
 	if limit > 0 {
-		filterLimit = fmt.Sprintf("limit %d", limit)
+		filterLimit = fmt.Sprintf(" limit %d ", limit)
 	}
 	return filterLimit
 }
 
 func getFilterId (order string, id int) string {
-	filterId := fmt.Sprintf(" where id > %d ", id)
+	filterId := fmt.Sprintf(" id > %d ", id)
 	if order == "desc" {
-		filterId = fmt.Sprintf(" where id < %d ", id)
+		filterId = fmt.Sprintf(" id < %d ", id)
 	}
 	return filterId
 }
 
 func getFilterSince(order string, since string) string{
-	filterSince := fmt.Sprintf(" where created > %s ", since)
+	filterSince := fmt.Sprintf(" created > '%s' ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf(" where id < %s ", since)
+		filterSince = fmt.Sprintf(" created < '%s' ", since)
 	}
 	return filterSince
 }

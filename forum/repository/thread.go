@@ -46,21 +46,21 @@ func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thr
 }
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
+	// TODO where incorrect syntax
 	threads := make([]model.Thread, 0, limit)
 	forumId := r.GetForumIdBySlug(forumSlug)
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
 	filterSince := getFilterSince(order, since)
 
-	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
-		forumId, since, order,
+	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+ ` order by $2 `+filterLimit,
+		forumId, order,
 	)
 	checkErr(err)
 	return threads
 }
 
 func (r *DatabaseRepository) CheckParentPost(posts []model.Post) bool {
-	// TODO
 	var parentsForCheck, children []int64
 	for _, post := range posts { // выгружаем всех родителей и детей
 		parentsForCheck = append(parentsForCheck, post.Parent)

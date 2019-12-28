@@ -19,7 +19,7 @@ func (r *DatabaseRepository) GetStatusDB() model.Status {
 
 func (r *DatabaseRepository) countRecords(tableName string) int64 {
 	var countOfRecords int64 = 0
-	err := r.db.Get(&countOfRecords, `select count(*) from "`+tableName)
+	err := r.db.Get(&countOfRecords, `select count(*) from "`+tableName+`"`)
 	checkErr(err)
 	return countOfRecords
 }

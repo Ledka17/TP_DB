@@ -52,23 +52,29 @@ func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) mod
 	post := r.getPostById(id)
 	post.Message = update.Message
 	_, err := r.db.Exec(
-		`update "`+postTable+`" set message=$1 where id=$2`,
+		`update "`+postTable+`" set message=$1 isEdited=True where id=$2`,
 		post.Message, post.Id,
 	)
 	checkErr(err)
 	return post
 }
 
-func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post) []model.Post {
+func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post {
 	created := time.Now().Format(time.RFC3339)
-	for _, post := range posts {
-		post.Created = created
-		post.ForumId = r.GetForumIdBySlug(post.Forum)
+	for i, post := range posts {
+		curThread := r.GetThreadInDB(threadSlugOrId)
+		post.ThreadId = curThread.Id
+		post.ForumId = curThread.ForumId
 		post.UserId = r.GetUserIdByName(post.Author)
-		_, err := r.db.Exec(`insert into "`+postTable+`" (id, parent, message, created, user_id, forum_id, thread) values ($1, $2, $3, $4, $5, $6)`,
-			post.Id, post.Parent, post.Message, post.Created, post.UserId, post.ForumId)
+		post.Created = created
+
+		err := r.db.QueryRow(`insert into "`+postTable+`" (parent, message, created, user_id, forum_id, thread_id) values ($1, $2, $3, $4, $5, $6) returning id`,
+			post.Parent, post.Message, post.Created, post.UserId, post.ForumId, post.ThreadId).Scan(&post.Id)
 		checkErr(err)
 		r.incForumDetails("posts", post.ForumId)
+
+		post.Forum = curThread.Forum
+		posts[i] = post
 	}
 	return posts
 }
@@ -110,7 +116,7 @@ func (r *DatabaseRepository) GetPostsForumInDB(forumSlug string, limit int, sinc
 	filterSince := getFilterSince(order, since)
 
 	err := r.db.Select(&posts, `select * from "`+postTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
-		forumId, since, order,
+		forumId, order,
 	)
 	checkErr(err)
 	return posts

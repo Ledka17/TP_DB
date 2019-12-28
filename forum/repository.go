@@ -12,7 +12,7 @@ type Repository interface {
 	GetPostInDB(id int, related []string) model.PostFull
 	GetPostsInDB(threadSlugOrId string, limit int, since int, sort string, desc bool) []model.Post
 	ChangePostInDB(id int, update model.PostUpdate) model.Post
-	CreatePostsInDB(posts []model.Post) []model.Post
+	CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post
 
 	CleanUp()
 	GetStatusDB() model.Status
