@@ -22,15 +22,20 @@ func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
 }
 
 func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
-	var thread model.Thread
-	id, err := strconv.Atoi(slugOrId)
-	if err != nil {
-		id = -1
-	}
-	err = r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) or id=$2 limit 1`, slugOrId, id)
+	var thread, emptyThread model.Thread
+	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) limit 1`, slugOrId)
 	checkErr(err)
-	thread.Forum = r.GetForumById(thread.ForumId).Slug
-	thread.Author = r.GetUserById(thread.UserId).Nickname
+	if thread == emptyThread {
+		id, _ := strconv.Atoi(slugOrId)
+		thread = r.getThreadById(id)
+	}
+	return thread
+}
+
+func (r *DatabaseRepository) getThreadById(id int) model.Thread {
+	var thread model.Thread
+	err := r.db.Get(&thread, `select * from "`+threadTable+`" where id=$1 limit 1`, id)
+	checkErr(err)
 	return thread
 }
 
@@ -41,15 +46,15 @@ func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thr
 	thread.UserId = r.GetUserInDB(thread.Author).Id
 
 	err := r.db.QueryRow(`insert into "`+threadTable+
-		`" (title, slug, user_id, message, created, forum_id) values ($1, $2, $3, $4, $5, $6) returning id`,
-		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId).Scan(&thread.Id)
+		`" (title, slug, user_id, message, created, forum_id, author, forum) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).Scan(&thread.Id)
 	checkErr(err)
 	r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
-	// TODO where incorrect syntax
+	// TODO makeslice: cap out of range
 	threads := make([]model.Thread, 0, limit)
 	forumId := r.GetForumIdBySlug(forumSlug)
 	order := getOrder(desc)

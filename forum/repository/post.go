@@ -38,7 +38,7 @@ func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, sinc
 
 func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) model.Post {
 	post := r.getPostById(id)
-	if update.Message != "" {
+	if update.Message != "" && update.Message != post.Message{
 		_, err := r.db.Exec(
 			`update "`+postTable+`" set message=$1, isEdited=True where id=$2`,
 			update.Message, id,
@@ -58,13 +58,13 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 		post.ForumId = curThread.ForumId
 		post.UserId = r.GetUserIdByName(post.Author)
 		post.Created = created
+		post.Forum = curThread.Forum
 
-		err := r.db.QueryRow(`insert into "`+postTable+`" (parent, message, created, user_id, forum_id, thread_id) values ($1, $2, $3, $4, $5, $6) returning id`,
-			post.Parent, post.Message, post.Created, post.UserId, post.ForumId, post.ThreadId).Scan(&post.Id)
+		err := r.db.QueryRow(`insert into "`+postTable+`" (parent, message, created, user_id, forum_id, thread_id, forum, author) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+			post.Parent, post.Message, post.Created, post.UserId, post.ForumId, post.ThreadId, post.Forum, post.Author).Scan(&post.Id)
 		checkErr(err)
 		r.incForumDetails("posts", post.ForumId)
 
-		post.Forum = curThread.Forum
 		posts[i] = post
 	}
 	return posts
@@ -74,8 +74,8 @@ func (r *DatabaseRepository) getPostById(id int) model.Post {
 	var post model.Post
 	err := r.db.Get(&post, `select * from "`+postTable+`" where id=$1`, id)
 	checkErr(err)
-	post.Author = r.GetUserById(post.UserId).Nickname
-	post.Forum = r.GetForumById(post.ForumId).Slug
+	//post.Author = r.GetUserById(post.UserId).Nickname
+	//post.Forum = r.GetForumById(post.ForumId).Slug
 	return post
 }
 
