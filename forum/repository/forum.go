@@ -35,7 +35,7 @@ func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
 }
 
 func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User {
-	var users []model.User
+	users := make([]model.User, 0)
 	var usersId []int64
 
 	threads := r.GetThreadsForumInDB(slug, limit, since, desc)

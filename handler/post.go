@@ -33,7 +33,7 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 		}
 		if checkInRelated("thread", related) {
 			thread := h.usecase.GetThreadInDB(string(post.ThreadId))
-			log.Println("thread id =", post.ThreadId)
+			log.Println("thread =", thread)
 			postFull.Thread = &thread
 		}
 		return c.JSON(200, postFull)

@@ -23,8 +23,11 @@ func (r *DatabaseRepository) IsThreadInDB(slugOrId string) bool {
 
 func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 	var thread model.Thread
-	id, _ := strconv.Atoi(slugOrId)
-	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) or id=$2 limit 1`, slugOrId, id)
+	id, err := strconv.Atoi(slugOrId)
+	if err != nil {
+		id = -1
+	}
+	err = r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) or id=$2 limit 1`, slugOrId, id)
 	checkErr(err)
 	thread.Forum = r.GetForumById(thread.ForumId).Slug
 	thread.Author = r.GetUserById(thread.UserId).Nickname
@@ -63,12 +66,8 @@ func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, si
 func (r *DatabaseRepository) CheckParentPost(posts []model.Post) bool {
 	var parentsForCheck, children []int64
 	for _, post := range posts { // выгружаем всех родителей и детей
-		if !have(post.Parent, parentsForCheck) {
-			parentsForCheck = append(parentsForCheck, post.Parent)
-		}
-		if !have(post.Id, children) {
-			children = append(children, post.Id)
-		}
+		parentsForCheck = append(parentsForCheck, post.Parent)
+		children = append(children, post.Id)
 	}
 	for _, parent := range parentsForCheck { // проверяем есть ли родитель
 		if parent != 0 && !have(parent, children) && !r.IsPostInDB(int(parent)) {

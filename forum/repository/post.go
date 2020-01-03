@@ -38,12 +38,13 @@ func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, sinc
 
 func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) model.Post {
 	post := r.getPostById(id)
-	if update.Message != "" && update.Message != post.Message {
+	if update.Message != "" {
 		_, err := r.db.Exec(
 			`update "`+postTable+`" set message=$1, isEdited=True where id=$2`,
 			update.Message, id,
 		)
 		checkErr(err)
+		post.IsEdited = true
 		post.Message = update.Message
 	}
 	return post
@@ -84,7 +85,7 @@ func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, 
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
-	err := r.db.Select(&posts, `select * from "`+postTable+`" `+filterId+` order by $1 `+filterLimit,
+	err := r.db.Select(&posts, `select * from "`+postTable+`" where 1=1`+filterId+` order by $1 `+filterLimit,
 		order,
 	)
 	checkErr(err)
