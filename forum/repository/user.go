@@ -21,6 +21,15 @@ func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	return false
 }
 
+func (r *DatabaseRepository) IsUsersInDB(nicknames []string) bool {
+	for _, nickname := range nicknames {
+		if !r.IsUserInDB(nickname, "") {
+			return false
+		}
+	}
+	return true
+}
+
 func (r *DatabaseRepository) GetUserInDB(nickname string) model.User {
 	var user model.User
 	err := r.db.Get(&user, `select * from "`+userTable+`" where lower(nickname)=lower($1) limit 1`, nickname)

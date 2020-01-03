@@ -30,10 +30,19 @@ func (h *DataBaseHandler) GetForumDetailsHandler(c echo.Context) error {
 }
 
 func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
-	queryParams := c.QueryParams()
-	limit, _ := strconv.Atoi(queryParams["limit"][0])
-	since := queryParams["since"][0]
-	desc, _ := strconv.ParseBool(queryParams["desc"][0])
+	limit := -1
+	since := ""
+	desc := false
+	// TODO get params
+	if c.QueryParam("limit") != "" {
+		limit, _ = strconv.Atoi(c.QueryParam("limit"))
+	}
+	if c.QueryParam("since") != "" {
+		since = c.QueryParam("since")
+	}
+	if c.QueryParam("desc") != "" {
+		desc, _ = strconv.ParseBool(c.QueryParam("desc"))
+	}
 
 	forumSlug := c.Param("slug")
 
@@ -44,15 +53,25 @@ func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
 }
 
 func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
-	queryParams := c.QueryParams()
-	limit, _ := strconv.Atoi(queryParams["limit"][0])
-	since := queryParams["since"][0]
-	desc, _ := strconv.ParseBool(queryParams["desc"][0])
+	limit := -1
+	since := ""
+	desc := false
+	// TODO get params
+	if c.QueryParam("limit") != "" {
+		limit, _ = strconv.Atoi(c.QueryParam("limit"))
+	}
+	if c.QueryParam("since") != "" {
+		since = c.QueryParam("since")
+	}
+	if c.QueryParam("desc") != "" {
+		desc, _ = strconv.ParseBool(c.QueryParam("desc"))
+	}
 
-	slug := c.Param("slug")
+	forumSlug := c.Param("slug")
 
-	if h.usecase.IsForumInDB(slug) {
-		return c.JSON(200, h.usecase.GetForumUsersInDB(slug, limit, since, desc))
+	if h.usecase.IsForumInDB(forumSlug) {
+		users := h.usecase.GetForumUsersInDB(forumSlug, limit, since, desc)
+		return c.JSON(200, users)
 	}
 	return writeWithError(c, 404, "forum not found")
 }

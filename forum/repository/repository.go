@@ -48,17 +48,17 @@ func getFilterLimit (limit int) string {
 }
 
 func getFilterId (order string, id int) string {
-	filterId := fmt.Sprintf(" id > %d ", id)
+	filterId := fmt.Sprintf(" and id > %d ", id)
 	if order == "desc" {
-		filterId = fmt.Sprintf(" id < %d ", id)
+		filterId = fmt.Sprintf(" and id < %d ", id)
 	}
 	return filterId
 }
 
 func getFilterSince(order string, since string) string{
-	filterSince := fmt.Sprintf(" created > '%s' ", since)
+	filterSince := fmt.Sprintf("and created > '%s' ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf(" created < '%s' ", since)
+		filterSince = fmt.Sprintf("and created < '%s' ", since)
 	}
 	return filterSince
 }

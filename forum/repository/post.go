@@ -15,20 +15,8 @@ func (r *DatabaseRepository) IsPostInDB(id int) bool {
 	return false
 }
 
-func (r *DatabaseRepository) GetPostInDB(id int, related []string) model.PostFull {
-	var postFull model.PostFull
-	post := r.getPostById(id)
-	postFull.Post = post
-	if checkInRelated("user", related) {
-		postFull.Author = r.GetUserInDB(post.Author)
-	}
-	if checkInRelated("forum", related) {
-		postFull.Forum = r.getForumById(post.ForumId)
-	}
-	if checkInRelated("thread", related) {
-		postFull.Thread = r.GetThreadInDB(string(post.ThreadId))
-	}
-	return postFull
+func (r *DatabaseRepository) GetPostInDB(id int) model.Post {
+	return r.getPostById(id)
 }
 
 func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, since int, sort string, desc bool) []model.Post {
@@ -50,12 +38,14 @@ func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, sinc
 
 func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) model.Post {
 	post := r.getPostById(id)
-	post.Message = update.Message
-	_, err := r.db.Exec(
-		`update "`+postTable+`" set message=$1 isEdited=True where id=$2`,
-		post.Message, post.Id,
-	)
-	checkErr(err)
+	if update.Message != "" && update.Message != post.Message {
+		_, err := r.db.Exec(
+			`update "`+postTable+`" set message=$1, isEdited=True where id=$2`,
+			update.Message, id,
+		)
+		checkErr(err)
+		post.Message = update.Message
+	}
 	return post
 }
 
@@ -83,6 +73,8 @@ func (r *DatabaseRepository) getPostById(id int) model.Post {
 	var post model.Post
 	err := r.db.Get(&post, `select * from "`+postTable+`" where id=$1`, id)
 	checkErr(err)
+	post.Author = r.GetUserById(post.UserId).Nickname
+	post.Forum = r.GetForumById(post.ForumId).Slug
 	return post
 }
 
@@ -92,20 +84,11 @@ func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, 
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
-	err := r.db.Select(&posts, `select * from "`+postTable+`"`+filterId+`order by $1 `+filterLimit,
+	err := r.db.Select(&posts, `select * from "`+postTable+`" `+filterId+` order by $1 `+filterLimit,
 		order,
 	)
 	checkErr(err)
 	return posts
-}
-
-func checkInRelated(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *DatabaseRepository) GetPostsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Post {

@@ -4,12 +4,13 @@ import "github.com/Ledka17/TP_DB/model"
 
 type Repository interface {
 	IsForumInDB(slug string) bool
+	GetForumById(id int32) model.Forum
 	GetForumInDB(slug string) model.Forum
 	CreateForumInDB(forum model.Forum) model.Forum
 	GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User
 
 	IsPostInDB(id int) bool
-	GetPostInDB(id int, related []string) model.PostFull
+	GetPostInDB(id int) model.Post
 	GetPostsInDB(threadSlugOrId string, limit int, since int, sort string, desc bool) []model.Post
 	ChangePostInDB(id int, update model.PostUpdate) model.Post
 	CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post
@@ -18,6 +19,7 @@ type Repository interface {
 	GetStatusDB() model.Status
 
 	IsUserInDB(nickname string, email string) bool
+	IsUsersInDB(nickname []string) bool
 	ChangeUserInDB(nickname string, userUpdate model.UserUpdate) model.User
 	GetUserInDB(nickname string) model.User
 	GetUsersInDB(nickname string, email string) []*model.User

@@ -32,14 +32,19 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 
 	slugOrId := c.Param("slug_or_id")
 
-	if h.usecase.IsThreadInDB(slugOrId) {
+	nicknames := make([]string, 0, len(posts))
+	for _, post := range posts {
+		nicknames = append(nicknames, post.Author)
+	}
+
+	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUsersInDB(nicknames) { // TODO проверка наличия авторов в базе
 		if h.usecase.CheckParentPost(posts) {
 			return c.JSON(201, h.usecase.CreatePostsInDB(posts, slugOrId))
 		}
 		return writeWithError(c, 409, "have a conflicts in posts")
 	}
 
-	return writeWithError(c, 404, "thread not found")
+	return writeWithError(c, 404, "thread or users not found")
 }
 
 func (h *DataBaseHandler) GetThreadDetails(c echo.Context) error {
@@ -68,11 +73,23 @@ func (h *DataBaseHandler) ChangeThreadDetails(c echo.Context) error {
 
 func (h *DataBaseHandler) GetThreadPosts(c echo.Context) error {
 	slugOrId := c.Param("slug_or_id")
-	vars := c.QueryParams()
-	limit, _ := strconv.Atoi(vars["limit"][0])
-	since, _ := strconv.Atoi(vars["since"][0])
-	sort := vars["sort"][0]
-	desc, _ := strconv.ParseBool(vars["desc"][0])
+
+	limit := -1
+	since := -1
+	sort := ""
+	desc := false
+	if c.QueryParam("limit") != "" {
+		limit, _ = strconv.Atoi(c.QueryParam("limit"))
+	}
+	if c.QueryParam("since") != "" {
+		since, _ = strconv.Atoi(c.QueryParam("since"))
+	}
+	if c.QueryParam("sort") != "" {
+		sort = c.QueryParam("sort")
+	}
+	if c.QueryParam("desc") != "" {
+		desc, _ = strconv.ParseBool(c.QueryParam("desc"))
+	}
 
 	if h.usecase.IsThreadInDB(slugOrId) {
 		return c.JSON(200, h.usecase.GetPostsInDB(slugOrId, limit, since, sort, desc))

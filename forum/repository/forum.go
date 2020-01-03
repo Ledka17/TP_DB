@@ -36,15 +36,23 @@ func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
 
 func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User {
 	var users []model.User
+	var usersId []int64
+
 	threads := r.GetThreadsForumInDB(slug, limit, since, desc)
 	for _, thread := range threads {
-		user := r.GetUserById(thread.UserId)
-		users = append(users, user)
+		if !have(int64(thread.UserId), usersId) {
+			usersId = append(usersId, int64(thread.UserId))
+		}
 	}
-
 	posts := r.GetPostsForumInDB(slug, limit, since, desc)
 	for _, post := range posts {
-		user := r.GetUserById(post.UserId)
+		if !have(int64(post.UserId), usersId) {
+			usersId = append(usersId, int64(post.UserId))
+		}
+	}
+
+	for _, userId := range usersId {
+		user := r.GetUserById(int32(userId))
 		users = append(users, user)
 	}
 	return users
@@ -57,7 +65,7 @@ func (r *DatabaseRepository) GetForumIdBySlug(slug string) int32 {
 	return id
 }
 
-func (r *DatabaseRepository) getForumById(id int32) model.Forum {
+func (r *DatabaseRepository) GetForumById(id int32) model.Forum {
 	forumById := model.Forum{}
 	err := r.db.Get(&forumById, `select * from "`+forumTable+`" where id=$1`, id)
 	checkErr(err)
@@ -65,7 +73,7 @@ func (r *DatabaseRepository) getForumById(id int32) model.Forum {
 }
 
 func (r *DatabaseRepository) incForumDetails(field string, id int32) {
-	forum := r.getForumById(id)
+	forum := r.GetForumById(id)
 	var count int64 = 0
 	if field == "posts" {
 		count = forum.Posts

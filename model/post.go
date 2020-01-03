@@ -7,19 +7,19 @@ type Post struct {
 	Created		string		`db:"created" json:"created"`
 	Forum		string		`db:"-" json:"forum"`
 	ForumId		int32		`db:"forum_id" json:"-"`
-	IsEdited	bool		`db:"isEdited" json:"isEdited"`
+	IsEdited	bool		`db:"isedited" json:"isEdited"`
 	Message		string		`db:"message" json:"message"`
 	Parent		int64		`db:"parent" json:"parent"`
 	ThreadId	int32		`db:"thread_id" json:"thread"`
 }
 
 type PostFull struct {
-	Author	User
-	Forum	Forum
-	Post 	Post
-	Thread	Thread
+	Author	*User			`json:"author,omitempty"`
+	Forum	*Forum			`json:"forum,omitempty"`
+	Post 	*Post			`json:"post,omitempty"`
+	Thread	*Thread			`json:"thread,omitempty"`
 }
 
 type PostUpdate struct {
-	Message	string	`db:"message" json:"message"`
+	Message	string			`json:"message"`
 }
