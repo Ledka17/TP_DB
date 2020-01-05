@@ -6,12 +6,14 @@ import (
 	"github.com/labstack/echo"
 	"log"
 	"strconv"
+	"strings"
 )
 
 func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	checkErr(err)
-	related := c.QueryParams()["related"]
+	related := strings.Split(c.QueryParam("related"), ",")
+	log.Println("related =", related)
 
 	if h.usecase.IsPostInDB(id) {
 		post := h.usecase.GetPostInDB(id)
@@ -24,16 +26,18 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 		}
 
 		if checkInRelated("user", related) {
+			log.Println("user in related")
 			user := h.usecase.GetUserInDB(post.Author)
 			postFull.Author = &user
 		}
 		if checkInRelated("forum", related) {
+			log.Println("forum in related")
 			forum := h.usecase.GetForumById(post.ForumId)
 			postFull.Forum = &forum
 		}
 		if checkInRelated("thread", related) {
-			thread := h.usecase.GetThreadInDB(string(post.ThreadId))
-			log.Println("thread =", thread)
+			log.Println("thread in related")
+			thread := h.usecase.GetThreadById(int(post.ThreadId))
 			postFull.Thread = &thread
 		}
 		return c.JSON(200, postFull)

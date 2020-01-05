@@ -7,7 +7,7 @@ type Repository interface {
 	GetForumById(id int32) model.Forum
 	GetForumInDB(slug string) model.Forum
 	CreateForumInDB(forum model.Forum) model.Forum
-	GetForumUsersInDB(slug string, limit int, since int, desc bool) []model.User
+	GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User
 
 	IsPostInDB(id int) bool
 	GetPostInDB(id int) model.Post
@@ -28,9 +28,10 @@ type Repository interface {
 
 	IsThreadInDB(slugOrId string) bool
 	GetThreadInDB(slugOrID string) model.Thread
+	GetThreadById(id int) model.Thread
 	CreateThreadInDB(forumSlug string, thread model.Thread) model.Thread
 	GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread
-	CheckParentPost(posts []model.Post) bool
+	CheckParentPost(posts []model.Post, threadSlug string) bool
 	ChangeThreadInDB(threadUpdate model.ThreadUpdate, slugOrId string) model.Thread
 
 	VoteForThreadInDB(threadSlugOrId string, vote model.Vote) model.Thread

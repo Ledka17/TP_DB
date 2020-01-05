@@ -32,12 +32,12 @@ func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
 	return forum
 }
 
-func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since int, desc bool) []model.User {
+func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User {
 	users := make([]model.User, 0)
 
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
-	filterSince := getFilterSinceByUserId(order, since)
+	filterSince := getFilterSinceByUserName(order, since)
 	err := r.db.Select(&users, `select u.* from ( select u.* from "`+threadTable+`" t inner join "`+userTable+
 		`" u on t.user_id = u.id where lower(t.forum) = lower($1) union select u2.* from "`+postTable+
 		`" p inner join "`+userTable+`" u2 on p.user_id = u2.id where lower(p.forum) = lower($1) ) u where 1=1 `+

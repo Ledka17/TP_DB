@@ -38,7 +38,7 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 	}
 
 	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUsersInDB(nicknames) { // TODO проверка наличия авторов в базе
-		if h.usecase.CheckParentPost(posts) {
+		if h.usecase.CheckParentPost(posts, slugOrId) {
 			return c.JSON(201, h.usecase.CreatePostsInDB(posts, slugOrId))
 		}
 		return writeWithError(c, 409, "have a conflicts in posts")

@@ -63,10 +63,13 @@ func getFilterSince(order string, since string) string{
 	return filterSince
 }
 
-func getFilterSinceByUserId(order string, since int) string{
-	filterSince := fmt.Sprintf(" and u.id > %d ", since)
+func getFilterSinceByUserName(order string, since string) string{
+	if since == "" {
+		return ""
+	}
+	filterSince := fmt.Sprintf(" and u.nickname > '%s' ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf(" and u.id < %d ", since)
+		filterSince = fmt.Sprintf(" and u.nickname < '%s' ", since)
 	}
 	return filterSince
 }

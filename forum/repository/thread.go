@@ -27,12 +27,12 @@ func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 	checkErr(err)
 	if thread == emptyThread {
 		id, _ := strconv.Atoi(slugOrId)
-		thread = r.getThreadById(id)
+		thread = r.GetThreadById(id)
 	}
 	return thread
 }
 
-func (r *DatabaseRepository) getThreadById(id int) model.Thread {
+func (r *DatabaseRepository) GetThreadById(id int) model.Thread {
 	var thread model.Thread
 	err := r.db.Get(&thread, `select * from "`+threadTable+`" where id=$1 limit 1`, id)
 	checkErr(err)
@@ -68,15 +68,21 @@ func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, si
 	return threads
 }
 
-func (r *DatabaseRepository) CheckParentPost(posts []model.Post) bool {
-	var parentsForCheck, children []int64
+func (r *DatabaseRepository) CheckParentPost(posts []model.Post, threadSlug string) bool {
+	var parentsForCheck []model.Post
+	var children []int64
+	emptyPost := model.Post{}
+	threadId := r.GetThreadInDB(threadSlug).Id
 	for _, post := range posts { // выгружаем всех родителей и детей
-		parentsForCheck = append(parentsForCheck, post.Parent)
+		parentsForCheck = append(parentsForCheck, post)
 		children = append(children, post.Id)
 	}
-	for _, parent := range parentsForCheck { // проверяем есть ли родитель
-		if parent != 0 && !have(parent, children) && !r.IsPostInDB(int(parent)) {
-			return false
+	for _, post := range parentsForCheck { // проверяем есть ли родитель
+		if post.Parent != 0 && !have(post.Parent, children) {
+			parentPost := r.getPostById(int(post.Parent))
+			if parentPost == emptyPost || parentPost.ThreadId != threadId {
+				return false
+			}
 		}
 	}
 	return true
