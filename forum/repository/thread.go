@@ -55,7 +55,7 @@ func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thr
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
 	// TODO makeslice: cap out of range
-	threads := make([]model.Thread, 0, limit)
+	threads := make([]model.Thread, limit)
 	forumId := r.GetForumIdBySlug(forumSlug)
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)

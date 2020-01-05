@@ -54,14 +54,14 @@ func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
 
 func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
 	limit := -1
-	since := ""
+	since := 0
 	desc := false
 	// TODO get params
 	if c.QueryParam("limit") != "" {
 		limit, _ = strconv.Atoi(c.QueryParam("limit"))
 	}
 	if c.QueryParam("since") != "" {
-		since = c.QueryParam("since")
+		since, _ = strconv.Atoi(c.QueryParam("since"))
 	}
 	if c.QueryParam("desc") != "" {
 		desc, _ = strconv.ParseBool(c.QueryParam("desc"))

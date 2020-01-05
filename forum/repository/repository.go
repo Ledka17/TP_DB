@@ -56,9 +56,17 @@ func getFilterId (order string, id int) string {
 }
 
 func getFilterSince(order string, since string) string{
-	filterSince := fmt.Sprintf("and created > '%s' ", since)
+	filterSince := fmt.Sprintf(" and created > '%s' ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf("and created < '%s' ", since)
+		filterSince = fmt.Sprintf(" and created < '%s' ", since)
+	}
+	return filterSince
+}
+
+func getFilterSinceByUserId(order string, since int) string{
+	filterSince := fmt.Sprintf(" and u.id > %d ", since)
+	if order == "desc" {
+		filterSince = fmt.Sprintf(" and u.id < %d ", since)
 	}
 	return filterSince
 }

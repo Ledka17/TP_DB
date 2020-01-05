@@ -7,7 +7,7 @@ type Repository interface {
 	GetForumById(id int32) model.Forum
 	GetForumInDB(slug string) model.Forum
 	CreateForumInDB(forum model.Forum) model.Forum
-	GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User
+	GetForumUsersInDB(slug string, limit int, since int, desc bool) []model.User
 
 	IsPostInDB(id int) bool
 	GetPostInDB(id int) model.Post

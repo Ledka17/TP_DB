@@ -85,7 +85,7 @@ func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, 
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
-	err := r.db.Select(&posts, `select * from "`+postTable+`" where 1=1`+filterId+` order by $1 `+filterLimit,
+	err := r.db.Select(&posts, `select * from "`+postTable+`" where thread_id=`+string(threadId)+filterId+` order by $1 `+filterLimit,
 		order,
 	)
 	checkErr(err)
