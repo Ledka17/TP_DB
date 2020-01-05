@@ -28,10 +28,8 @@ func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, sinc
 		posts = r.getPostsFlat(threadId, limit, since, order)
 	case "tree":
 		// TODO
-		return []model.Post{}
 	case "parent_tree":
 		// TODO
-		return []model.Post{}
 	}
 	return posts
 }
@@ -74,34 +72,32 @@ func (r *DatabaseRepository) getPostById(id int) model.Post {
 	var post model.Post
 	err := r.db.Get(&post, `select * from "`+postTable+`" where id=$1`, id)
 	checkErr(err)
-	//post.Author = r.GetUserById(post.UserId).Nickname
-	//post.Forum = r.GetForumById(post.ForumId).Slug
 	return post
 }
 
 func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, order string) []model.Post {
-	var posts []model.Post
+	posts := make([]model.Post, limit)
 
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
-	err := r.db.Select(&posts, `select * from "`+postTable+`" where thread_id=`+string(threadId)+filterId+` order by $1 `+filterLimit,
-		order,
+	err := r.db.Select(&posts, `select * from "`+postTable+`" where thread_id=$1 `+filterId+` order by id `+order+filterLimit,
+		threadId,
 	)
 	checkErr(err)
 	return posts
 }
 
-func (r *DatabaseRepository) GetPostsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Post {
-	posts := make([]model.Post, 0, limit)
-	forumId := r.GetForumIdBySlug(forumSlug)
-	order := getOrder(desc)
-	filterLimit := getFilterLimit(limit)
-	filterSince := getFilterSince(order, since)
-
-	err := r.db.Select(&posts, `select * from "`+postTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
-		forumId, order,
-	)
-	checkErr(err)
-	return posts
-}
+//func (r *DatabaseRepository) GetPostsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Post {
+//	posts := make([]model.Post, 0, limit)
+//	forumId := r.GetForumIdBySlug(forumSlug)
+//	order := getOrder(desc)
+//	filterLimit := getFilterLimit(limit)
+//	filterSince := getFilterSince(order, since)
+//
+//	err := r.db.Select(&posts, `select * from "`+postTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
+//		forumId, order,
+//	)
+//	checkErr(err)
+//	return posts
+//}

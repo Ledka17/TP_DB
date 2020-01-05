@@ -40,29 +40,31 @@ func (r *DatabaseRepository) GetThreadById(id int) model.Thread {
 }
 
 func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thread) model.Thread {
-	thread.Forum = r.GetForumInDB(forumSlug).Slug
+	forum := r.GetForumInDB(forumSlug)
+	thread.Forum = forum.Slug
 	//thread.Created = time.Now()
-	thread.ForumId = r.GetForumIdBySlug(thread.Forum)
+	thread.ForumId = forum.Id
 	thread.UserId = r.GetUserInDB(thread.Author).Id
 
 	err := r.db.QueryRow(`insert into "`+threadTable+
 		`" (title, slug, user_id, message, created, forum_id, author, forum) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
-		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).Scan(&thread.Id)
+		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).
+		Scan(&thread.Id)
 	checkErr(err)
 	r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
-	// TODO makeslice: cap out of range
-	threads := make([]model.Thread, limit)
+	threads := make([]model.Thread, 0)
 	forumId := r.GetForumIdBySlug(forumSlug)
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
 	filterSince := getFilterSince(order, since)
 
-	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+ ` order by $2 `+filterLimit,
-		forumId, order,
+	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+
+		` order by created `+order+filterLimit,
+		forumId,
 	)
 	checkErr(err)
 	return threads

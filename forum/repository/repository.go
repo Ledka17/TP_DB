@@ -67,9 +67,9 @@ func getFilterSinceByUserName(order string, since string) string{
 	if since == "" {
 		return ""
 	}
-	filterSince := fmt.Sprintf(" and u.nickname > '%s' ", since)
+	filterSince := fmt.Sprintf(" and lower(u.nickname) > lower('%s') ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf(" and u.nickname < '%s' ", since)
+		filterSince = fmt.Sprintf(" and lower(u.nickname) < lower('%s') ", since)
 	}
 	return filterSince
 }
