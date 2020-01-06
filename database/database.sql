@@ -64,3 +64,19 @@ create table if not exists "vote"
 
     foreign key (thread_id) references "thread" (id)
 );
+
+create index post_forum_id_idx on post using btree (forum_id);
+create index post_thread_id_idx on post using btree (thread_id);
+create index post_user_id_idx on post using btree (user_id);
+create index post_forum_idx on post (forum);
+
+create index thread_id_idx on thread using btree (id);
+create index thread_forum_id_idx on thread using btree (forum_id);
+create index thread_user_id_idx on thread using btree (user_id);
+create index thread_slug_idx on thread (lower(slug));
+
+create index forum_id_idx on forum using btree (id);
+create index forum_slug_idx on forum (lower(slug));
+
+create index user_id_idx on "user" using btree (id);
+create index user_nickname_idx on "user" (nickname);
