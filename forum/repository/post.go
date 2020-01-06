@@ -90,7 +90,6 @@ func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, 
 func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, order string) []model.Post {
 	posts := make([]model.Post, 0)
 
-	//filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
 	recursiveQuery := `with recursive r as (select *, CAST (id AS VARCHAR (50)) as PATH, CAST (id AS VARCHAR (50)) as OLDPATH, id as LEVEL0 from "`+
@@ -107,9 +106,6 @@ func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, 
 		checkErr(err)
 	} else {
 		sign := ">"
-		//if order == "desc" {
-		//	sign = "<"
-		//}
 		resTable := `(select row_number() over(order by level0 `+order+`, path `+order+
 			`) as n, * from r order by LEVEL0 `+order+`, path `+order+`) r `
 		err := r.db.Select(&posts, recursiveQuery+
@@ -126,22 +122,23 @@ func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, 
 func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since int, order string) []model.Post {
 	posts := make([]model.Post, 0)
 
-	filterId := getFilterId(order, since)
+	filterId := ""
 	filterLimit := getFilterLimit(limit)
 
+	if since != -1 {
+		parentSince := r.getPostById(since).Parent
+		filterId = getFilterId(order, int(parentSince))
+	}
+
 	recursiveQuery := `with recursive r as ( (select *, CAST (id AS VARCHAR (50)) as PATH, id as LEVEL0 from"`+
-		postTable+`" where thread_id=$1 and parent=0 order by id `+order+filterLimit+
+		postTable+`" where thread_id=$1 and parent=0 `+filterId+`order by id `+order+filterLimit+
 		`) union (select p.*, CAST ( r.PATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as PATH, LEVEL0 as LEVEL0 from "`+
 		postTable+ `" p inner join r on p.parent = r.id) ) `
-	if since == -1 {
-		err := r.db.Select(&posts, recursiveQuery+
-			`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
-			order+`, path`,
-			threadId,
-		)
-		checkErr(err)
-	} else {
-		posts = r.getPostsTree(threadId, limit, since, order)
-	}
+	err := r.db.Select(&posts, recursiveQuery+
+		`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
+		order+`, path`,
+		threadId,
+	)
+	checkErr(err)
 	return posts
 }
