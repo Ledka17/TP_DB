@@ -15,7 +15,7 @@ create table if not exists "forum"
     title      varchar     not null,
     slug       varchar     not null,
     user_id    int         not null,
-    author       varchar     not null,
+    author     varchar     not null,
 
     FOREIGN KEY (user_id) REFERENCES "user" (id)
 );

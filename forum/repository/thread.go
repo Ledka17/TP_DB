@@ -110,12 +110,3 @@ func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, s
 	}
 	return thread
 }
-
-func have(elem int64, array []int64) bool {
-	for _, current := range array {
-		if current == elem {
-			return true
-		}
-	}
-	return false
-}
