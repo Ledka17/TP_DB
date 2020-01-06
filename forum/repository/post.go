@@ -20,18 +20,17 @@ func (r *DatabaseRepository) GetPostInDB(id int) model.Post {
 }
 
 func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, since int, sort string, desc bool) []model.Post {
-	posts := make([]model.Post, 0, limit)
 	order := getOrder(desc)
 	threadId := r.GetThreadInDB(threadSlugOrId).Id
 	switch sort {
 	case "flat", "":
-		posts = r.getPostsFlat(threadId, limit, since, order)
+		return r.getPostsFlat(threadId, limit, since, order)
 	case "tree":
-		// TODO
+		return r.getPostsTree(threadId, limit, since, order)
 	case "parent_tree":
-		// TODO
+		return r.getPostsParentTree(threadId, limit, since, order)
 	}
-	return posts
+	return []model.Post{}
 }
 
 func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) model.Post {
@@ -76,7 +75,7 @@ func (r *DatabaseRepository) getPostById(id int) model.Post {
 }
 
 func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, order string) []model.Post {
-	posts := make([]model.Post, limit)
+	posts := make([]model.Post, 0)
 
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
@@ -88,16 +87,40 @@ func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, 
 	return posts
 }
 
-//func (r *DatabaseRepository) GetPostsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Post {
-//	posts := make([]model.Post, 0, limit)
-//	forumId := r.GetForumIdBySlug(forumSlug)
-//	order := getOrder(desc)
-//	filterLimit := getFilterLimit(limit)
-//	filterSince := getFilterSince(order, since)
-//
-//	err := r.db.Select(&posts, `select * from "`+postTable+`" where forum_id=$1 `+filterSince+ `order by $2 `+filterLimit,
-//		forumId, order,
-//	)
-//	checkErr(err)
-//	return posts
-//}
+func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, order string) []model.Post {
+	posts := make([]model.Post, 0)
+
+	filterId := getFilterId(order, since)
+	filterLimit := getFilterLimit(limit)
+
+	err := r.db.Select(&posts, `with recursive r as (select *, CAST (id AS VARCHAR (50)) as PATH, CAST (id AS VARCHAR (50)) as OLDPATH, id as LEVEL0 from "`+
+		postTable+`" where thread_id=$1 and parent=0`+filterId+
+		`union select p.*, CAST ( r.PATH ||'->'|| p.id AS VARCHAR(50)) as PATH, CAST (r.PATH  AS VARCHAR (50)) as OLDPATH, LEVEL0 as LEVEL0 from "`+
+		postTable+
+		`" p inner join r on p.parent = r.id) select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
+		order+`, oldpath, id `+order+filterLimit,
+		threadId,
+		)
+	checkErr(err)
+
+	return posts
+}
+
+func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since int, order string) []model.Post {
+	posts := make([]model.Post, 0)
+
+	filterId := getFilterId(order, since)
+	filterLimit := getFilterLimit(limit)
+
+	err := r.db.Select(&posts, `with recursive r as ( (select *, CAST (id AS VARCHAR (50)) as PATH, CAST (id AS VARCHAR (50)) as OLDPATH, id as LEVEL0 from"`+
+		postTable+`"where thread_id=$1 and parent=0`+filterId+`order by id `+order+filterLimit+
+		`) union (select p.*, CAST ( r.PATH ||'->'|| p.id AS VARCHAR(50)) as PATH, CAST (r.PATH  AS VARCHAR (50)) as OLDPATH, LEVEL0 as LEVEL0 from "`+
+		postTable+
+		`" p inner join r on p.parent = r.id) ) select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
+		order+`, oldpath, id`,
+		threadId,
+	)
+	checkErr(err)
+
+	return posts
+}

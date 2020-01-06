@@ -62,7 +62,7 @@ func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, si
 	filterLimit := getFilterLimit(limit)
 	filterSince := getFilterSince(order, since)
 
-	err := r.db.Select(&threads, `select * from "`+threadTable+`" where forum_id=$1 `+filterSince+
+	err := r.db.Select(&threads, `select distinct * from "`+threadTable+`" where forum_id=$1 `+filterSince+
 		` order by created `+order+filterLimit,
 		forumId,
 	)

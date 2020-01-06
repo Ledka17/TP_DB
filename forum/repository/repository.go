@@ -6,6 +6,7 @@ import (
 	"github.com/Ledka17/TP_DB/forum"
 	"github.com/jmoiron/sqlx"
 	"log"
+	"time"
 )
 
 const (
@@ -48,6 +49,9 @@ func getFilterLimit (limit int) string {
 }
 
 func getFilterId (order string, id int) string {
+	if id == -1 {
+		return ""
+	}
 	filterId := fmt.Sprintf(" and id > %d ", id)
 	if order == "desc" {
 		filterId = fmt.Sprintf(" and id < %d ", id)
@@ -56,9 +60,17 @@ func getFilterId (order string, id int) string {
 }
 
 func getFilterSince(order string, since string) string{
-	filterSince := fmt.Sprintf(" and created > '%s' ", since)
+	if since == "" {
+		return ""
+	}
+
+	log.Println("time =", since)
+	x,_ := time.Parse("2019-09-13T16:51:23.112Z", since)
+	log.Println("parse =", x)
+
+	filterSince := fmt.Sprintf(" and created >= '%s' ", since)
 	if order == "desc" {
-		filterSince = fmt.Sprintf(" and created < '%s' ", since)
+		filterSince = fmt.Sprintf(" and created <= '%s' ", since)
 	}
 	return filterSince
 }
