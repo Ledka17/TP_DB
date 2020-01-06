@@ -15,7 +15,7 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	checkErr(err)
 
 	if thread.Author == "" || !h.usecase.IsUserInDB(thread.Author, "") || !h.usecase.IsForumInDB(slug) {
-		return writeWithError(c, 404, "user not found")
+		return writeWithError(c, 404, "user or forum not found")
 	}
 
 	if h.usecase.IsThreadInDB(thread.Slug) {
