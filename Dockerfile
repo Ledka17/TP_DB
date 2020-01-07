@@ -2,6 +2,8 @@ FROM golang:1.13 AS build
 WORKDIR /usr/src/app
 
 # Копируем исходный код в Docker-контейнер
+ENV GOPATH=$HOME/go
+
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
