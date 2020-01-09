@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 )
 
 func checkErr(err error) {
@@ -41,11 +40,9 @@ func getFilterSince(order string, since string) string{
 	if since == "" {
 		return ""
 	}
-	t, _ := time.Parse(time.RFC3339Nano, since)
-	since = t.Add(time.Hour * 3).String()[:len(t.Add(time.Hour * 3).String())-10]+"Z"
 
 	sign := getSign(order)
-	filterSince := fmt.Sprintf(" and to_timestamp(created, 'YYYY-MM-DD HH24:MI:SS.MS\"Z\"') %s= to_timestamp('%s', 'YYYY-MM-DD HH24:MI:SS.MS\"Z\"') ", sign, since)
+	filterSince := fmt.Sprintf(" and created %s= '%s' ", sign, since)
 	return filterSince
 }
 
