@@ -15,7 +15,7 @@ RUN go build main.go
 FROM ubuntu:18.10
 
 # Установка postgresql
-ENV PGVER 10
+ENV PGVER 12
 RUN apt -y update && apt install -y postgresql-$PGVER
 
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-$PGVER`` package when it was ``apt-get installed``
@@ -45,6 +45,7 @@ EXPOSE 5432
 EXPOSE 5000
 
 # Add VOLUMEs to allow backup of config, logs and databases
+RUN cat database/postgresql.conf >> /etc/postgresql/$PGVER/main/postgresql.conf
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Запускаем PostgreSQL и сервер
