@@ -50,8 +50,10 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 func (h *DataBaseHandler) GetThreadDetails(c echo.Context) error {
 	slugOrId := c.Param("slug_or_id")
 
-	if h.usecase.IsThreadInDB(slugOrId) {
-		return c.JSON(200, h.usecase.GetThreadInDB(slugOrId))
+	foundThread := h.usecase.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread {
+		return c.JSON(200, foundThread)
 	}
 
 	return writeWithError(c, 404, "thread not found")
