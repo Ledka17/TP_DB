@@ -8,12 +8,8 @@ func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	count := 0
 	countMail := 0
 	// Один запрос
-	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where lower(nickname)=lower($1)`, nickname)
+	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where lower(nickname)=lower($1) or lower(email)=lower($2)`, nickname, email)
 	checkErr(err)
-	if email != "" {
-		err := r.db.Get(&countMail, `select count(*) from "`+userTable+`" where lower(email)=lower($1)`, email)
-		checkErr(err)
-	}
 	count += countMail
 
 	// Вернуть юзера
@@ -32,9 +28,13 @@ func (r *DatabaseRepository) IsUsersInDB(nicknames []string) bool {
 	return true
 }
 
-func (r *DatabaseRepository) GetUserInDB(nickname string) model.User {
+func (r *DatabaseRepository) GetUserInDB(nickname string, args ...string) model.User {
 	var user model.User
-	err := r.db.Get(&user, `select * from "`+userTable+`" where lower(nickname)=lower($1) limit 1`, nickname)
+	email := ""
+	if args != nil {
+		email = args[0]
+	}
+	err := r.db.Get(&user, `select * from "`+userTable+`" where lower(nickname)=lower($1) or lower(email)=lower($2) limit 1`, nickname, email)
 	checkErr(err)
 	return user
 }
