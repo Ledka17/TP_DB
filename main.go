@@ -33,8 +33,8 @@ func newDB() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxIdleConns(7)
-	db.SetMaxOpenConns(7)
+	db.SetMaxIdleConns(100)
+	db.SetMaxOpenConns(100)
 	err = db.Ping()
 	if err != nil {
 		return nil, err

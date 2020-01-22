@@ -15,7 +15,7 @@ RUN go build main.go
 FROM ubuntu:18.10
 
 # Установка postgresql
-ENV PGVER 12
+ENV PGVER 10
 RUN apt -y update && apt install -y postgresql-$PGVER
 
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-$PGVER`` package when it was ``apt-get installed``

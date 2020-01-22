@@ -7,6 +7,7 @@ import (
 func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	count := 0
 	countMail := 0
+	// Один запрос
 	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where lower(nickname)=lower($1)`, nickname)
 	checkErr(err)
 	if email != "" {
@@ -15,6 +16,7 @@ func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	}
 	count += countMail
 
+	// Вернуть юзера
 	if count != 0 {
 		return true
 	}

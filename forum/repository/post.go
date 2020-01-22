@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"github.com/Ledka17/TP_DB/model"
 	"time"
 )
@@ -33,18 +34,20 @@ func (r *DatabaseRepository) GetPostsInDB(threadSlugOrId string, limit int, sinc
 	return []model.Post{}
 }
 
-func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) model.Post {
+func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) (model.Post, error) {
 	post := r.getPostById(id)
-	if update.Message != "" && update.Message != post.Message{
+	if update.Message != "" && update.Message != post.Message {
 		_, err := r.db.Exec(
 			`update "`+postTable+`" set message=$1, isEdited=True where id=$2`,
 			update.Message, id,
 		)
-		checkErr(err)
+		if err == sql.ErrNoRows || err != nil {
+			return model.Post{}, err
+		}
 		post.IsEdited = true
 		post.Message = update.Message
 	}
-	return post
+	return post, nil
 }
 
 func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post {

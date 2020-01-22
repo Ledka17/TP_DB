@@ -8,8 +8,12 @@ import (
 
 func (h *DataBaseHandler) GetUserProfileHandler(c echo.Context) error {
 	nickname := c.Param("nickname")
-	if h.usecase.IsUserInDB(nickname, "") {
-		return c.JSON(200, h.usecase.GetUserInDB(nickname))
+
+	user := h.usecase.GetUserInDB(nickname)
+	emptyUser := model.User{}
+
+	if user != emptyUser {
+		return c.JSON(200, user)
 	}
 	return writeWithError(c, 404, "user not found")
 }

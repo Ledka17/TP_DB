@@ -23,6 +23,7 @@ func (r *DatabaseRepository) GetForumInDB(slug string) model.Forum {
 }
 
 func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
+	// Прокидывать юзера, а не делать запрос
 	user := r.GetUserInDB(forum.User)
 	forum.UserId = user.Id
 	forum.User = user.Nickname

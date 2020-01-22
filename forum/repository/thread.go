@@ -57,14 +57,13 @@ func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thr
 
 func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread {
 	threads := make([]model.Thread, 0)
-	forumId := r.GetForumIdBySlug(forumSlug)
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
 	filterSince := getFilterSince(order, since)
 
-	err := r.db.Select(&threads, `select distinct * from "`+threadTable+`" where forum_id=$1 `+filterSince+
+	err := r.db.Select(&threads, `select distinct * from "`+threadTable+`" where forum=$1 `+filterSince+
 		` order by created `+order+filterLimit,
-		forumId,
+		forumSlug,
 	)
 	checkErr(err)
 	return threads

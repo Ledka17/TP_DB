@@ -13,9 +13,9 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 	checkErr(err)
 	related := strings.Split(c.QueryParam("related"), ",")
 
-	if h.usecase.IsPostInDB(id) {
-		post := h.usecase.GetPostInDB(id)
-
+	post := h.usecase.GetPostInDB(id)
+	emptyPost := model.Post{}
+	if post != emptyPost {
 		postFull := model.PostFull{
 			Author: nil,
 			Forum:  nil,
@@ -43,15 +43,17 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 func (h *DataBaseHandler) ChangePostDetailsHandler(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	checkErr(err)
-	if h.usecase.IsPostInDB(id) {
-		decoder := json.NewDecoder(c.Request().Body)
-		var post model.PostUpdate
-		err := decoder.Decode(&post)
-		checkErr(err)
+	decoder := json.NewDecoder(c.Request().Body)
+	var post model.PostUpdate
+	err = decoder.Decode(&post)
+	checkErr(err)
 
-		return c.JSON(200, h.usecase.ChangePostInDB(id, post))
+	changedPost, _ := h.usecase.ChangePostInDB(id, post)
+	if changedPost.Author == "" {
+		return writeWithError(c, 404, "post not found")
 	}
-	return writeWithError(c, 404, "post not found")
+
+	return c.JSON(200, changedPost)
 }
 
 func checkInRelated(a string, list []string) bool {

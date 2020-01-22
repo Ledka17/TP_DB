@@ -15,16 +15,21 @@ func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
 	if forum.User == "" || !h.usecase.IsUserInDB(forum.User, "") {
 		return writeWithError(c, 404, "User not found")
 	}
-	if h.usecase.IsForumInDB(forum.Slug) {
-		return c.JSON(409, h.usecase.GetForumInDB(forum.Slug))
+	foundForum := h.usecase.GetForumInDB(forum.Slug)
+	emptyForum := model.Forum{}
+	if foundForum != emptyForum {
+		return c.JSON(409, foundForum)
 	}
 	return c.JSON(201, h.usecase.CreateForumInDB(forum))
 }
 
 func (h *DataBaseHandler) GetForumDetailsHandler(c echo.Context) error {
 	slug := c.Param("slug")
-	if h.usecase.IsForumInDB(slug) {
-		return c.JSON(200, h.usecase.GetForumInDB(slug))
+	foundForum := h.usecase.GetForumInDB(slug)
+	emptyForum := model.Forum{}
+
+	if foundForum != emptyForum {
+		return c.JSON(200, foundForum)
 	}
 	return writeWithError(c, 404, "forum not found")
 }
@@ -33,7 +38,6 @@ func (h *DataBaseHandler) GetForumThreadsHandler(c echo.Context) error {
 	limit := -1
 	since := ""
 	desc := false
-	// TODO get params
 	if c.QueryParam("limit") != "" {
 		limit, _ = strconv.Atoi(c.QueryParam("limit"))
 	}
@@ -56,7 +60,6 @@ func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
 	limit := -1
 	since := ""
 	desc := false
-	// TODO get params
 	if c.QueryParam("limit") != "" {
 		limit, _ = strconv.Atoi(c.QueryParam("limit"))
 	}
@@ -70,6 +73,7 @@ func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
 	forumSlug := c.Param("slug")
 
 	if h.usecase.IsForumInDB(forumSlug) {
+		// podumat'
 		users := h.usecase.GetForumUsersInDB(forumSlug, limit, since, desc)
 		return c.JSON(200, users)
 	}
