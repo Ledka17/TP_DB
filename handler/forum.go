@@ -12,7 +12,9 @@ func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
 	var forum model.Forum
 	err := decoder.Decode(&forum)
 	checkErr(err)
-	if forum.User == "" || !h.usecase.IsUserInDB(forum.User, "") {
+	user := h.usecase.GetUserInDB(forum.User)
+	emptyUser := model.User{}
+	if user == emptyUser {
 		return writeWithError(c, 404, "User not found")
 	}
 	foundForum := h.usecase.GetForumInDB(forum.Slug)
@@ -20,6 +22,8 @@ func (h *DataBaseHandler) CreateForumHandler (c echo.Context) error {
 	if foundForum != emptyForum {
 		return c.JSON(409, foundForum)
 	}
+	forum.User = user.Nickname
+	forum.UserId = user.Id
 	return c.JSON(201, h.usecase.CreateForumInDB(forum))
 }
 
