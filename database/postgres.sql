@@ -2,11 +2,9 @@ CREATE USER docker WITH
     LOGIN
     SUPERUSER
     INHERIT
-    CONNECTION LIMIT -1
     PASSWORD 'docker';
 
 CREATE DATABASE docker
     WITH
     OWNER = docker
-    ENCODING = 'UTF8'
-    CONNECTION LIMIT = -1;
+    ENCODING = 'UTF8';
