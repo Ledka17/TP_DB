@@ -23,7 +23,7 @@ type Repository interface {
 	ChangeUserInDB(nickname string, userUpdate model.UserUpdate) model.User
 	GetUserInDB(nickname string, args ...string) model.User
 	GetUsersInDB(nickname string, email string) []*model.User
-	СreateUserInDB(nickname string, user model.User) model.User
+	CreateUserInDB(nickname string, user model.User) model.User
 	GetUserIdByName(nickname string) int32
 
 	IsThreadInDB(slugOrId string) bool
@@ -34,5 +34,5 @@ type Repository interface {
 	CheckParentPost(posts []model.Post, threadSlug string) bool
 	ChangeThreadInDB(threadUpdate model.ThreadUpdate, slugOrId string) model.Thread
 
-	VoteForThreadInDB(threadSlugOrId string, vote model.Vote) model.Thread
+	VoteForThreadInDB(thread model.Thread, vote model.Vote) model.Thread
 }

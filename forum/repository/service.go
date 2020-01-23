@@ -11,7 +11,7 @@ func (r *DatabaseRepository) CleanUp()  {
 
 func (r *DatabaseRepository) GetStatusDB() model.Status {
 	var status model.Status
-	tx, err := r.db.Begin()
+	tx, err := r.db.Beginx()
 	checkErr(err)
 
 	defer tx.Rollback()

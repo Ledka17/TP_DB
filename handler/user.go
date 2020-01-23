@@ -49,6 +49,6 @@ func (h *DataBaseHandler) CreateUserHandler(c echo.Context) error {
 		return c.JSON(409, foundUsers)
 	}
 
-	return c.JSON(201, h.usecase.СreateUserInDB(nickname, user))
+	return c.JSON(201, h.usecase.CreateUserInDB(nickname, user))
 }
 

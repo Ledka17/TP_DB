@@ -18,8 +18,10 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 		return writeWithError(c, 404, "user or forum not found")
 	}
 
-	if h.usecase.IsThreadInDB(thread.Slug) {
-		return c.JSON(409, h.usecase.GetThreadInDB(thread.Slug))
+	foundThread := h.usecase.GetThreadInDB(thread.Slug)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread {
+		return c.JSON(409, foundThread)
 	}
 	return c.JSON(201, h.usecase.CreateThreadInDB(slug, thread))
 }
@@ -106,8 +108,10 @@ func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
 	err := decoder.Decode(&vote)
 	checkErr(err)
 
-	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUserInDB(vote.Nickname, "") {
-		return c.JSON(200, h.usecase.VoteForThreadInDB(slugOrId, vote))
+	foundThread := h.usecase.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread && h.usecase.IsUserInDB(vote.Nickname, "") {
+		return c.JSON(200, h.usecase.VoteForThreadInDB(foundThread, vote))
 	}
 	return writeWithError(c, 404, "thread or user not found")
 }

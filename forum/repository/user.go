@@ -46,7 +46,7 @@ func (r *DatabaseRepository) GetUsersInDB(nickname string, email string) []*mode
 	return users
 }
 
-func (r *DatabaseRepository) СreateUserInDB(nickname string, user model.User) model.User {
+func (r *DatabaseRepository) CreateUserInDB(nickname string, user model.User) model.User {
 	user.Nickname = nickname
 	_, err := r.db.Exec(`insert into "`+userTable+`" (nickname, email, about, fullname) values ($1, $2, $3, $4)`,
 		user.Nickname, user.Email, user.About, user.Fullname)
