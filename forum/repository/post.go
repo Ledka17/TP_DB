@@ -50,9 +50,8 @@ func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) (mo
 	return post, nil
 }
 
-func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post {
+func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, curThread model.Thread) []model.Post {
 	created := time.Now().Format(time.RFC3339)
-	curThread := r.GetThreadInDB(threadSlugOrId)
 	tx, err := r.db.Beginx()
 	checkErr(err)
 	defer tx.Rollback()

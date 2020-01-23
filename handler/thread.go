@@ -48,9 +48,11 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 		nicknames = append(nicknames, post.Author)
 	}
 
-	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUsersInDB(nicknames) {
+	foundThread := h.usecase.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread && h.usecase.IsUsersInDB(nicknames) {
 		if h.usecase.CheckParentPost(posts, slugOrId) {
-			return c.JSON(201, h.usecase.CreatePostsInDB(posts, slugOrId))
+			return c.JSON(201, h.usecase.CreatePostsInDB(posts, foundThread))
 		}
 		return writeWithError(c, 409, "have a conflicts in posts")
 	}

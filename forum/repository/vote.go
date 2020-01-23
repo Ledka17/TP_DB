@@ -28,13 +28,13 @@ func (r *DatabaseRepository) VoteForThreadInDB(thread model.Thread, vote model.V
 		thread.Votes += vote.Voice - foundVote.Voice
 	}
 
-	_, err = tx.Exec(
-		`update "`+threadTable+`" set votes=$1 where id=$2`,
-		thread.Votes, thread.Id,
-	)
-	if err != nil {
-		tx.Rollback()
-	}
+	//_, err = tx.Exec(
+	//	`update "`+threadTable+`" set votes=$1 where id=$2`,
+	//	thread.Votes, thread.Id,
+	//)
+	//if err != nil {
+	//	tx.Rollback()
+	//}
 
 	err = tx.Commit()
 	checkErr(err)
