@@ -22,15 +22,17 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 		return writeWithError(c, 404, "user or forum not found")
 	}
 
-	foundThread := h.usecase.GetThreadInDB(thread.Slug)
-	emptyThread := model.Thread{}
-	if foundThread != emptyThread {
-		return c.JSON(409, foundThread)
+	if thread.Slug != "" {
+		foundThread := h.usecase.GetThreadInDB(thread.Slug)
+		emptyThread := model.Thread{}
+		if foundThread != emptyThread {
+			return c.JSON(409, foundThread)
+		}
 	}
 	thread.Forum = foundForum.Slug
 	thread.ForumId = foundForum.Id
 	thread.UserId = foundUser.Id
-	return c.JSON(201, h.usecase.CreateThreadInDB(slug, thread))
+	return c.JSON(201, h.usecase.CreateThreadInDB(thread))
 }
 
 func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {

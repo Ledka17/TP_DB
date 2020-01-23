@@ -70,6 +70,7 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 
 		posts[i] = post
 	}
+	tx.Commit()
 	return posts
 }
 
