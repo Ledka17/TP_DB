@@ -14,11 +14,15 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	err := decoder.Decode(&thread)
 	checkErr(err)
 
+	if thread.Author == "" {
+		return writeWithError(c, 404, "user is empty")
+	}
+
 	foundUser := h.usecase.GetUserInDB(thread.Author)
 	emptyUser := model.User{}
 	foundForum := h.usecase.GetForumInDB(slug)
 	emptyForum := model.Forum{}
-	if thread.Author == "" || foundForum == emptyForum || foundUser == emptyUser {
+	if foundForum == emptyForum || foundUser == emptyUser {
 		return writeWithError(c, 404, "user or forum not found")
 	}
 

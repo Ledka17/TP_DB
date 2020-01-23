@@ -100,7 +100,7 @@ CREATE FUNCTION fn_insert_thread_votes()
     END;
 ' LANGUAGE plpgsql;
 
-CREATE TRIGGER on_vote_insert
+CREATE TRIGGER vote_insert
     AFTER INSERT ON vote
     FOR EACH ROW EXECUTE PROCEDURE fn_insert_thread_votes();
 
@@ -121,6 +121,34 @@ CREATE FUNCTION fn_update_thread_votes()
     END;
 ' LANGUAGE plpgsql;
 
-CREATE TRIGGER on_vote_update
+CREATE TRIGGER vote_update
     AFTER UPDATE ON vote
     FOR EACH ROW EXECUTE PROCEDURE fn_update_thread_votes();
+
+CREATE FUNCTION fn_inc_forum_thread()
+    RETURNS TRIGGER AS '
+        BEGIN
+            UPDATE forum
+                SET threads = threads + 1
+                WHERE slug = NEW.forum;
+            RETURN NEW;
+        END;
+' LANGUAGE plpgsql;
+
+CREATE TRIGGER thread_insert
+    AFTER INSERT ON thread
+    FOR EACH ROW EXECUTE PROCEDURE fn_inc_forum_thread();
+
+CREATE FUNCTION fn_inc_forum_post()
+    RETURNS TRIGGER AS '
+    BEGIN
+        UPDATE forum
+        SET posts = posts + 1
+        WHERE slug = NEW.forum;
+        RETURN NEW;
+    END;
+' LANGUAGE plpgsql;
+
+CREATE TRIGGER post_insert
+    AFTER INSERT ON thread
+    FOR EACH ROW EXECUTE PROCEDURE fn_inc_forum_post();

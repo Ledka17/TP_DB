@@ -47,11 +47,13 @@ func (r *DatabaseRepository) CreateThreadInDB(thread model.Thread) model.Thread 
 		`" (title, slug, user_id, message, created, forum_id, author, forum) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
 		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).
 		Scan(&thread.Id)
-	checkErr(err)
+	if err != nil {
+		tx.Rollback()
+	}
 	err = tx.Commit()
 	checkErr(err)
 	//TODO long
-	r.incForumDetails("threads", thread.ForumId)
+	//r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
 
