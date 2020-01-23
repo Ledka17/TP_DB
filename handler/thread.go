@@ -14,7 +14,11 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	err := decoder.Decode(&thread)
 	checkErr(err)
 
-	if thread.Author == "" || !h.usecase.IsUserInDB(thread.Author, "") || !h.usecase.IsForumInDB(slug) {
+	foundUser := h.usecase.GetUserInDB(thread.Author)
+	emptyUser := model.User{}
+	foundForum := h.usecase.GetForumInDB(slug)
+	emptyForum := model.Forum{}
+	if thread.Author == "" || foundForum == emptyForum || foundUser == emptyUser {
 		return writeWithError(c, 404, "user or forum not found")
 	}
 
@@ -23,6 +27,9 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	if foundThread != emptyThread {
 		return c.JSON(409, foundThread)
 	}
+	thread.Forum = foundForum.Slug
+	thread.ForumId = foundForum.Id
+	thread.UserId = foundUser.Id
 	return c.JSON(201, h.usecase.CreateThreadInDB(slug, thread))
 }
 
@@ -39,7 +46,7 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 		nicknames = append(nicknames, post.Author)
 	}
 
-	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUsersInDB(nicknames) { // TODO проверка наличия авторов в базе
+	if h.usecase.IsThreadInDB(slugOrId) && h.usecase.IsUsersInDB(nicknames) {
 		if h.usecase.CheckParentPost(posts, slugOrId) {
 			return c.JSON(201, h.usecase.CreatePostsInDB(posts, slugOrId))
 		}

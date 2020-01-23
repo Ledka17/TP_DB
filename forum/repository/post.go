@@ -52,15 +52,18 @@ func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) (mo
 
 func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId string) []model.Post {
 	created := time.Now().Format(time.RFC3339)
+	curThread := r.GetThreadInDB(threadSlugOrId)
+	tx, err := r.db.Beginx()
+	checkErr(err)
+	defer tx.Rollback()
 	for i, post := range posts {
-		curThread := r.GetThreadInDB(threadSlugOrId)
 		post.ThreadId = curThread.Id
 		post.ForumId = curThread.ForumId
 		post.UserId = r.GetUserIdByName(post.Author)
 		post.Created = created
 		post.Forum = curThread.Forum
 
-		err := r.db.QueryRow(`insert into "`+postTable+`" (parent, message, created, user_id, forum_id, thread_id, forum, author) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+		err := tx.QueryRow(`insert into "`+postTable+`" (parent, message, created, user_id, forum_id, thread_id, forum, author) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
 			post.Parent, post.Message, post.Created, post.UserId, post.ForumId, post.ThreadId, post.Forum, post.Author).Scan(&post.Id)
 		checkErr(err)
 		r.incForumDetails("posts", post.ForumId)

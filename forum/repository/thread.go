@@ -40,17 +40,12 @@ func (r *DatabaseRepository) GetThreadById(id int) model.Thread {
 }
 
 func (r *DatabaseRepository) CreateThreadInDB(forumSlug string, thread model.Thread) model.Thread {
-	forum := r.GetForumInDB(forumSlug)
-	thread.Forum = forum.Slug
-	//thread.Created = time.Now()
-	thread.ForumId = forum.Id
-	thread.UserId = r.GetUserInDB(thread.Author).Id
-
 	err := r.db.QueryRow(`insert into "`+threadTable+
 		`" (title, slug, user_id, message, created, forum_id, author, forum) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
 		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).
 		Scan(&thread.Id)
 	checkErr(err)
+	//TODO long
 	r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
