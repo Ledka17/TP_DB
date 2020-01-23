@@ -25,6 +25,7 @@ func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 	var thread, emptyThread model.Thread
 	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) limit 1`, slugOrId)
 	checkErr(err)
+	//fmt.Println("select")
 	if thread == emptyThread {
 		id, _ := strconv.Atoi(slugOrId)
 		thread = r.GetThreadById(id)
@@ -40,10 +41,14 @@ func (r *DatabaseRepository) GetThreadById(id int) model.Thread {
 }
 
 func (r *DatabaseRepository) CreateThreadInDB(thread model.Thread) model.Thread {
-	err := r.db.QueryRow(`insert into "`+threadTable+
+	tx, err := r.db.Beginx()
+	defer tx.Rollback()
+	err = tx.QueryRow(`insert into "`+threadTable+
 		`" (title, slug, user_id, message, created, forum_id, author, forum) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
 		thread.Title, thread.Slug, thread.UserId, thread.Message, thread.Created, thread.ForumId, thread.Author, thread.Forum).
 		Scan(&thread.Id)
+	checkErr(err)
+	err = tx.Commit()
 	checkErr(err)
 	//TODO long
 	r.incForumDetails("threads", thread.ForumId)

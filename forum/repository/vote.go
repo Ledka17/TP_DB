@@ -13,14 +13,18 @@ func (r *DatabaseRepository) VoteForThreadInDB(thread model.Thread, vote model.V
 		_, err := tx.Exec(`insert into "`+voteTable+
 			`" (thread_id, nickname, voice) values ($1, $2, $3)`,
 			thread.Id, vote.Nickname, vote.Voice)
-		checkErr(err)
+		if err != nil {
+			tx.Rollback()
+		}
 		thread.Votes += vote.Voice
 	} else {
 		_, err := tx.Exec(`update "`+voteTable+
 			`" set voice=$1 where id=$2`,
 			vote.Voice, foundVote.Id,
 		)
-		checkErr(err)
+		if err != nil {
+			tx.Rollback()
+		}
 		thread.Votes += vote.Voice - foundVote.Voice
 	}
 
@@ -28,7 +32,9 @@ func (r *DatabaseRepository) VoteForThreadInDB(thread model.Thread, vote model.V
 		`update "`+threadTable+`" set votes=$1 where id=$2`,
 		thread.Votes, thread.Id,
 	)
-	checkErr(err)
+	if err != nil {
+		tx.Rollback()
+	}
 
 	err = tx.Commit()
 	checkErr(err)

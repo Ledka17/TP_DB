@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/Ledka17/TP_DB/model"
 )
 
@@ -30,6 +31,7 @@ func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
 
 func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User {
 	users := make([]model.User, 0)
+	fmt.Println("select forum users")
 
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
