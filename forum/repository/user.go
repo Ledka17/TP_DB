@@ -6,13 +6,13 @@ import (
 
 func (r *DatabaseRepository) IsUserInDB(nickname string, email string) bool {
 	count := 0
-	countMail := 0
-	// Один запрос
-	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where lower(nickname)=lower($1) or lower(email)=lower($2)`, nickname, email)
+	emailFilter := ""
+	if email != "" {
+		emailFilter = ` or lower(email)=lower("`+email+`")`
+	}
+	err := r.db.Get(&count, `select count(*) from "`+userTable+`" where lower(nickname)=lower($1)`+emailFilter, nickname)
 	checkErr(err)
-	count += countMail
 
-	// Вернуть юзера
 	if count != 0 {
 		return true
 	}
@@ -69,6 +69,7 @@ func (r *DatabaseRepository) GetUserById(id int32) model.User {
 }
 
 func (r *DatabaseRepository) ChangeUserInDB(nickname string, userUpdate model.UserUpdate) model.User {
+	//todo all update
 	if userUpdate.Fullname != "" {
 		_, err := r.db.Exec(
 			`update "`+userTable+`" set fullname=$1 where lower(nickname)=lower($2)`,

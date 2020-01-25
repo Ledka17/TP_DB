@@ -83,8 +83,10 @@ func (h *DataBaseHandler) ChangeThreadDetails(c echo.Context) error {
 	err := decoder.Decode(&threadUpdate)
 	checkErr(err)
 
-	if h.usecase.IsThreadInDB(slugOrId) {
-		return c.JSON(200, h.usecase.ChangeThreadInDB(threadUpdate, slugOrId))
+	foundThread := h.usecase.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread {
+		return c.JSON(200, h.usecase.ChangeThreadInDB(threadUpdate, foundThread))
 	}
 
 	return writeWithError(c, 404, "thread not found")
@@ -123,10 +125,18 @@ func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
 	err := decoder.Decode(&vote)
 	checkErr(err)
 
-	foundThread := h.usecase.GetThreadInDB(slugOrId)
-	emptyThread := model.Thread{}
-	if foundThread != emptyThread && h.usecase.IsUserInDB(vote.Nickname, "") {
-		return c.JSON(200, h.usecase.VoteForThreadInDB(foundThread, vote))
+	err = h.usecase.VoteForThreadInDB(slugOrId, vote)
+	if err != nil {
+		return writeWithError(c, 404, err.Error())
 	}
-	return writeWithError(c, 404, "thread or user not found")
+	thread := h.usecase.GetThreadInDB(slugOrId)
+	return c.JSON(200, thread)
+
+	//foundThread := h.usecase.GetThreadInDB(slugOrId)
+	//emptyThread := model.Thread{}
+	//
+	//if foundThread != emptyThread && h.usecase.IsUserInDB(vote.Nickname, "") {
+	//	return c.JSON(200, h.usecase.VoteForThreadInDB(foundThread, vote))
+	//}
+	//return writeWithError(c, 404, "thread or user not found")
 }

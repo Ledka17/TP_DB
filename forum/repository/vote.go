@@ -1,44 +1,30 @@
 package repository
 
-import "github.com/Ledka17/TP_DB/model"
+import (
+	"fmt"
+	"github.com/Ledka17/TP_DB/model"
+)
 
-func (r *DatabaseRepository) VoteForThreadInDB(thread model.Thread, vote model.Vote) model.Thread {
-	var emptyVote model.Vote
-	foundVote := r.getVoteInDB(thread.Id, vote.Nickname)
+func (r *DatabaseRepository) VoteForThreadInDB(slugOrId string, vote model.Vote) error {
+	thread := r.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
 
-	tx, err := r.db.Beginx()
-	defer tx.Rollback()
-
-	if foundVote == emptyVote {
-		_, err := tx.Exec(`insert into "`+voteTable+
-			`" (thread_id, nickname, voice) values ($1, $2, $3)`,
-			thread.Id, vote.Nickname, vote.Voice)
-		if err != nil {
-			tx.Rollback()
-		}
-		thread.Votes += vote.Voice
-	} else {
-		_, err := tx.Exec(`update "`+voteTable+
-			`" set voice=$1 where id=$2`,
-			vote.Voice, foundVote.Id,
-		)
-		if err != nil {
-			tx.Rollback()
-		}
-		thread.Votes += vote.Voice - foundVote.Voice
+	if thread == emptyThread {
+		return fmt.Errorf("thread not found")
 	}
 
-	//_, err = tx.Exec(
-	//	`update "`+threadTable+`" set votes=$1 where id=$2`,
-	//	thread.Votes, thread.Id,
-	//)
-	//if err != nil {
-	//	tx.Rollback()
-	//}
+	userIs := r.IsUserInDB(vote.Nickname, "")
+	if !userIs {
+		return fmt.Errorf("user not found")
+	}
 
-	err = tx.Commit()
+	_, err := r.db.Exec(`insert into "`+voteTable+`" (thread_id, nickname, voice) VALUES ($1, $2, $3)
+		ON CONFLICT ON CONSTRAINT vote_thread_id_nickname_key DO
+		UPDATE SET voice=$3 WHERE vote.thread_id=$1 AND lower(vote.nickname)=lower($2)`,
+		thread.Id, vote.Nickname, vote.Voice)
+
 	checkErr(err)
-	return thread
+	return nil
 }
 
 func (r *DatabaseRepository) getVoteInDB(threadId int32, nickname string) model.Vote {

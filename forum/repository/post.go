@@ -82,18 +82,26 @@ func (r *DatabaseRepository) getPostById(id int) model.Post {
 func (r *DatabaseRepository) getPostsFlat(threadId int32, limit int, since int, order string) []model.Post {
 	posts := make([]model.Post, 0)
 
+	tx, err := r.db.Beginx()
+	defer tx.Rollback()
 	filterId := getFilterId(order, since)
 	filterLimit := getFilterLimit(limit)
 
-	err := r.db.Select(&posts, `select * from "`+postTable+`" where thread_id=$1 `+filterId+` order by id `+order+filterLimit,
+	err = tx.Select(&posts, `select * from "`+postTable+`" where thread_id=$1 `+filterId+` order by id `+order+filterLimit,
 		threadId,
 	)
-	checkErr(err)
+	if err != nil {
+		tx.Rollback()
+	}
+	tx.Commit()
 	return posts
 }
 
 func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, order string) []model.Post {
 	posts := make([]model.Post, 0)
+
+	tx, err := r.db.Beginx()
+	defer tx.Rollback()
 
 	filterLimit := getFilterLimit(limit)
 
@@ -103,7 +111,7 @@ func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, 
 		postTable+ `" p inner join r on p.parent = r.id) `
 
 	if since == -1 {
-		err := r.db.Select(&posts, recursiveQuery+
+		err := tx.Select(&posts, recursiveQuery+
 			`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
 			order+`, path `+order+filterLimit,
 			threadId,
@@ -113,19 +121,25 @@ func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, 
 		sign := ">"
 		resTable := `(select row_number() over(order by level0 `+order+`, path `+order+
 			`) as n, * from r order by LEVEL0 `+order+`, path `+order+`) r `
-		err := r.db.Select(&posts, recursiveQuery+
+		err :=tx.Select(&posts, recursiveQuery+
 			`select r.id, r.thread_id, r.parent, r.author, r.created, r.forum, r.isedited, r.message from `+resTable+
 			` where n `+sign+` (select r.n from `+resTable+` where id=$2)`+filterLimit,
 			threadId, since,
 		)
 		checkErr(err)
 	}
-
+	if err != nil {
+		tx.Rollback()
+	}
+	tx.Commit()
 	return posts
 }
 
 func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since int, order string) []model.Post {
 	posts := make([]model.Post, 0)
+
+	tx, err := r.db.Beginx()
+	defer tx.Rollback()
 
 	filterId := ""
 	filterLimit := getFilterLimit(limit)
@@ -139,11 +153,14 @@ func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since
 		postTable+`" where thread_id=$1 and parent=0 `+filterId+`order by id `+order+filterLimit+
 		`) union (select p.*, CAST ( r.PATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as PATH, LEVEL0 as LEVEL0 from "`+
 		postTable+ `" p inner join r on p.parent = r.id) ) `
-	err := r.db.Select(&posts, recursiveQuery+
+	err = tx.Select(&posts, recursiveQuery+
 		`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
 		order+`, path`,
 		threadId,
 	)
-	checkErr(err)
+	if err != nil {
+		tx.Rollback()
+	}
+	tx.Commit()
 	return posts
 }

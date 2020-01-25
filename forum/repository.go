@@ -32,7 +32,7 @@ type Repository interface {
 	CreateThreadInDB(thread model.Thread) model.Thread
 	GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread
 	CheckParentPost(posts []model.Post, threadSlug string) bool
-	ChangeThreadInDB(threadUpdate model.ThreadUpdate, slugOrId string) model.Thread
+	ChangeThreadInDB(threadUpdate model.ThreadUpdate, oldThread model.Thread) model.Thread
 
-	VoteForThreadInDB(thread model.Thread, vote model.Vote) model.Thread
+	VoteForThreadInDB(slugOrId string, vote model.Vote) error
 }

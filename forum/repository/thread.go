@@ -52,7 +52,6 @@ func (r *DatabaseRepository) CreateThreadInDB(thread model.Thread) model.Thread 
 	}
 	err = tx.Commit()
 	checkErr(err)
-	//TODO long
 	//r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
@@ -91,23 +90,21 @@ func (r *DatabaseRepository) CheckParentPost(posts []model.Post, threadSlug stri
 	return true
 }
 
-func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, slugOrId string) model.Thread {
-	thread := r.GetThreadInDB(slugOrId)
-	if threadUpdate.Title != "" {
+func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, thread model.Thread) model.Thread {
+	tx, err := r.db.Beginx()
+	checkErr(err)
+	defer tx.Rollback()
+
+	if threadUpdate.Title != "" || threadUpdate.Message != "" {
 		thread.Title = threadUpdate.Title
-		_, err := r.db.Exec(
-			`update "`+threadTable+`" set title=$1 where id=$2`,
-			threadUpdate.Title, thread.Id,
-		)
-		checkErr(err)
-	}
-	if threadUpdate.Message != "" {
-		thread.Message = threadUpdate.Message
-		_, err := r.db.Exec(
-			`update "`+threadTable+`" set message=$1 where id=$2`,
-			threadUpdate.Message, thread.Id,
-		)
-		checkErr(err)
+		err := tx.QueryRow(
+			`update "`+threadTable+`" set title = coalesce(nullif($1, ''), title), message = coalesce(nullif($2, ''), message) where id=$3 returning title, message`,
+			threadUpdate.Title, threadUpdate.Message, thread.Id,
+		).Scan(&thread.Title, &thread.Message)
+		if err != nil {
+			tx.Rollback()
+		}
+		tx.Commit()
 	}
 	return thread
 }

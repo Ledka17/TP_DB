@@ -14,7 +14,7 @@ const (
 )
 
 type DatabaseRepository struct {
-	db                 *sqlx.DB
+	db	*sqlx.DB
 }
 
 func NewDatabaseRepository(db *sqlx.DB) forum.Repository {
