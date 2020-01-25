@@ -16,11 +16,6 @@ FROM ubuntu:18.10
 
 # Установка postgresql
 ENV PGVER 10
-RUN apt-get install -y wget curl python
-
-RUN echo deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main > /etc/apt/sources.list.d/pgdg.list
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-         apt-key add -
 RUN apt -y update && apt install -y postgresql-$PGVER
 
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-$PGVER`` package when it was ``apt-get installed``
@@ -33,9 +28,11 @@ COPY --from=build /usr/src/app/database database
 # Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
 # then create a database `docker` owned by the ``docker`` role.
 #RUN /etc/init.d/postgresql start &&\
-RUN /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-    createdb -O docker docker &&\
+RUN service postgresql start &&\
+    #psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
+    #createdb -O docker docker &&\
+    psql --file=database/postgres.sql &&\
+    psql --file=database/database.sql -d docker &&\
     service postgresql stop
 
 # Adjust PostgreSQL configuration so that remote connections to the

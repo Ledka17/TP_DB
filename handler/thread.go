@@ -53,10 +53,6 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 			return writeWithError(c, 409, err.Error())
 		}
 		return writeWithError(c, 404, err.Error())
-		//if h.usecase.CheckParentPost(posts, slugOrId) {
-		//	return c.JSON(201, h.usecase.CreatePostsInDB(posts, foundThread))
-		//}
-		//return writeWithError(c, 409, "have a conflicts in posts")
 	}
 
 	return c.JSON(201, posts)

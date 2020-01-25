@@ -25,7 +25,6 @@ func (r *DatabaseRepository) GetThreadInDB(slugOrId string) model.Thread {
 	var thread, emptyThread model.Thread
 	err := r.db.Get(&thread, `select * from "`+threadTable+`" where lower(slug)=lower($1) limit 1`, slugOrId)
 	checkErr(err)
-	//fmt.Println("select")
 	if thread == emptyThread {
 		id, _ := strconv.Atoi(slugOrId)
 		thread = r.GetThreadById(id)
@@ -69,25 +68,25 @@ func (r *DatabaseRepository) GetThreadsForumInDB(forumSlug string, limit int, si
 	return threads
 }
 
-func (r *DatabaseRepository) CheckParentPost(posts []model.Post, threadSlug string) bool {
-	var parentsForCheck []model.Post
-	var children []int64
-	emptyPost := model.Post{}
-	threadId := r.GetThreadInDB(threadSlug).Id
-	for _, post := range posts { // выгружаем всех родителей и детей
-		parentsForCheck = append(parentsForCheck, post)
-		children = append(children, post.Id)
-	}
-	for _, post := range parentsForCheck { // проверяем есть ли родитель
-		if post.Parent != 0 && !have(post.Parent, children) {
-			parentPost := r.getPostById(int(post.Parent))
-			if parentPost == emptyPost || parentPost.ThreadId != threadId {
-				return false
-			}
-		}
-	}
-	return true
-}
+//func (r *DatabaseRepository) CheckParentPost(posts []model.Post, threadSlug string) bool {
+//	var parentsForCheck []model.Post
+//	var children []int64
+//	emptyPost := model.Post{}
+//	threadId := r.GetThreadInDB(threadSlug).Id
+//	for _, post := range posts { // выгружаем всех родителей и детей
+//		parentsForCheck = append(parentsForCheck, post)
+//		children = append(children, post.Id)
+//	}
+//	for _, post := range parentsForCheck { // проверяем есть ли родитель
+//		if post.Parent != 0 && !have(post.Parent, children) {
+//			parentPost := r.getPostById(int(post.Parent))
+//			if parentPost == emptyPost || parentPost.ThreadId != threadId {
+//				return false
+//			}
+//		}
+//	}
+//	return true
+//}
 
 func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, thread model.Thread) model.Thread {
 	tx, err := r.db.Beginx()
