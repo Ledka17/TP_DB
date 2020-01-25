@@ -5,7 +5,7 @@ import (
 )
 
 func (r *DatabaseRepository) CleanUp()  {
-	_, err := r.db.Exec(`truncate "`+forumTable+`", "`+postTable+`", "`+threadTable+`", "`+voteTable+`", "`+userTable+`"`)
+	_, err := r.db.Exec(`truncate forum_user, "`+forumTable+`", "`+postTable+`", "`+threadTable+`", "`+voteTable+`", "`+userTable+`"`)
 	checkErr(err)
 }
 

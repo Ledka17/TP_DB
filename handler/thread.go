@@ -131,12 +131,4 @@ func (h *DataBaseHandler) VoteOnThread(c echo.Context) error {
 	}
 	thread := h.usecase.GetThreadInDB(slugOrId)
 	return c.JSON(200, thread)
-
-	//foundThread := h.usecase.GetThreadInDB(slugOrId)
-	//emptyThread := model.Thread{}
-	//
-	//if foundThread != emptyThread && h.usecase.IsUserInDB(vote.Nickname, "") {
-	//	return c.JSON(200, h.usecase.VoteForThreadInDB(foundThread, vote))
-	//}
-	//return writeWithError(c, 404, "thread or user not found")
 }

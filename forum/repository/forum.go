@@ -34,12 +34,11 @@ func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since str
 	order := getOrder(desc)
 	filterLimit := getFilterLimit(limit)
 	filterSince := getFilterSinceByUserName(order, since)
-	err := r.db.Select(&users, `select u.* from ( select u.* from "`+threadTable+`" t inner join "`+userTable+
-		`" u on t.user_id = u.id where lower(t.forum) = lower($1) union select u2.* from "`+postTable+
-		`" p inner join "`+userTable+`" u2 on p.user_id = u2.id where lower(p.forum) = lower($1) ) u where 1=1 `+
-		filterSince+ ` order by lower(u.nickname) `+order+filterLimit,
-		slug,
-		)
+
+	err := r.db.Select(&users, `select u.* from forum_user fu inner join "`+userTable+
+		`" u on fu.user_id = u.id where lower(fu.forum)=lower($1) `+filterSince+ ` order by lower(u.nickname) `+
+		order+filterLimit, slug)
+
 	checkErr(err)
 	return users
 }
