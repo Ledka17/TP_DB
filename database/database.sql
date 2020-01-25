@@ -20,10 +20,7 @@ create table if not exists "forum"
     threads    int         not null default 0,
     title      varchar     not null,
     slug       varchar     not null,
-    user_id    int         not null,
-    author     varchar     not null,
-
-    foreign key (user_id) references "user" (id)
+    author     varchar     not null
 );
 
 create table if not exists "thread"

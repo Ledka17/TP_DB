@@ -7,5 +7,4 @@ type Forum struct {
 	Treads	int32	`db:"threads" json:"threads"`
 	Title	string	`db:"title" json:"title"`
 	User	string	`db:"author" json:"user"`
-	UserId	int32	`db:"user_id" json:"-"`
 }

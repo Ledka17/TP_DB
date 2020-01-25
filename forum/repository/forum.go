@@ -22,8 +22,8 @@ func (r *DatabaseRepository) GetForumInDB(slug string) model.Forum {
 }
 
 func (r *DatabaseRepository) CreateForumInDB(forum model.Forum) model.Forum {
-	_, err := r.db.Exec(`insert into "`+forumTable+`" (slug, title, user_id, author) values ($1, $2, $3, $4)`,
-		forum.Slug, forum.Title, forum.UserId, forum.User)
+	_, err := r.db.Exec(`insert into "`+forumTable+`" (slug, title, author) values ($1, $2, $3)`,
+		forum.Slug, forum.Title, forum.User)
 	checkErr(err)
 	return forum
 }
