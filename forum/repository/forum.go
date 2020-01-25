@@ -56,18 +56,3 @@ func (r *DatabaseRepository) GetForumById(id int32) model.Forum {
 	checkErr(err)
 	return forumById
 }
-
-func (r *DatabaseRepository) incForumDetails(field string, id int32) {
-	forum := r.GetForumById(id)
-	var count int64 = 0
-	if field == "posts" {
-		count = forum.Posts
-	} else if field == "threads" {
-		count = int64(forum.Treads)
-	}
-	_, err := r.db.Exec(
-		`update "`+forumTable+`" set `+field+`=$1 where id=$2`,
-		count + 1, id,
-	)
-	checkErr(err)
-}

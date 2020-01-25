@@ -23,7 +23,7 @@ create table if not exists "forum"
     user_id    int         not null,
     author     varchar     not null,
 
-    FOREIGN KEY (user_id) REFERENCES "user" (id)
+    foreign key (user_id) references "user" (id)
 );
 
 create table if not exists "thread"
@@ -54,7 +54,9 @@ create table if not exists "post"
     created     varchar     not null,
     message     varchar     not null,
     isEdited    bool        not null default false,
-    parent      int         not null default 0,
+    parent      int         not null default 0, -- references "post" (id) on delete cascade on update restrict
+        --CONSTRAINT post_parent_constraint CHECK (fn_check_parent_post_same_thread(parent)=thread_id),
+    path        text,
 
     foreign key (forum_id) references "forum" (id),
     foreign key (thread_id) references "thread" (id),
@@ -82,7 +84,7 @@ create index post_forum_id_idx on post using btree (forum_id);
 -- create index post_user_id_idx on post using btree (user_id);
 -- create index post_forum_idx on post (forum);
 
-create index vote_thread_user_idx on vote (thread_id, nickname);
+create index vote_thread_user_idx on vote (thread_id, nickname) include (voice);
 
 create index thread_id_idx on thread (id);
 create index thread_forum_slug_idx on thread (forum);
@@ -96,6 +98,13 @@ create index user_id_idx on "user" (id);
 create index user_nickname_idx on "user" (lower(nickname));
 create index user_email_idx on "user" (lower(email));
 
+create unique index forum_users_idx ON forum_user(forum, user_id);
+
+CREATE OR REPLACE FUNCTION fn_check_parent_post_same_thread(post_id BIGINT) RETURNS INTEGER AS $$
+BEGIN
+    RETURN (SELECT thread_id FROM post WHERE id=post_id);
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE FUNCTION fn_inc_forum_thread()
     RETURNS TRIGGER AS '
@@ -160,7 +169,7 @@ CREATE TRIGGER users_forum
 
 CREATE OR REPLACE FUNCTION fn_users_forum_post() RETURNS TRIGGER AS $$
 begin
-    IF NEW.forum IS NOT NULL then
+    IF NEW.forum IS NOT NULL THEN
         INSERT INTO forum_user(forum, user_id) VALUES (NEW.forum, NEW.user_id)
         ON CONFLICT DO NOTHING;
     END IF;
@@ -171,3 +180,19 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER users_forum
     AFTER INSERT ON post
     FOR EACH ROW EXECUTE PROCEDURE fn_users_forum_post();
+
+CREATE OR REPLACE FUNCTION fn_create_post_path() RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.parent = 0 THEN
+        NEW.path = CAST( NEW.id+10000000 AS varchar(100));
+    ELSE
+        NEW.path = CAST((SELECT path FROM post WHERE id = NEW.parent) ||'->' || NEW.id+10000000 AS varchar(100));
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER post_path
+    BEFORE INSERT ON post
+    FOR EACH ROW EXECUTE PROCEDURE fn_create_post_path();

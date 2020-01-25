@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/Ledka17/TP_DB/model"
 	"time"
 )
@@ -104,30 +105,41 @@ func (r *DatabaseRepository) getPostsTree(threadId int32, limit int, since int, 
 	defer tx.Rollback()
 
 	filterLimit := getFilterLimit(limit)
+	filterSince := ""
 
-	recursiveQuery := `with recursive r as (select *, CAST (id AS VARCHAR (50)) as PATH, CAST (id AS VARCHAR (50)) as OLDPATH, id as LEVEL0 from "`+
-		postTable+`" where thread_id=$1 and parent=0`+
-		`union select p.*, CAST ( r.PATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as PATH, CAST (r.PATH  AS VARCHAR (50)) as OLDPATH, LEVEL0 as LEVEL0 from "`+
-		postTable+ `" p inner join r on p.parent = r.id) `
-
-	if since == -1 {
-		err := tx.Select(&posts, recursiveQuery+
-			`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
-			order+`, path `+order+filterLimit,
-			threadId,
-		)
-		checkErr(err)
-	} else {
-		sign := ">"
-		resTable := `(select row_number() over(order by level0 `+order+`, path `+order+
-			`) as n, * from r order by LEVEL0 `+order+`, path `+order+`) r `
-		err :=tx.Select(&posts, recursiveQuery+
-			`select r.id, r.thread_id, r.parent, r.author, r.created, r.forum, r.isedited, r.message from `+resTable+
-			` where n `+sign+` (select r.n from `+resTable+` where id=$2)`+filterLimit,
-			threadId, since,
-		)
-		checkErr(err)
+	if since != -1 {
+		sign := getSign(order)
+		filterSince = fmt.Sprintf(" and path%s(select path from post where id=%d) ", sign, since)
 	}
+
+	err = tx.Select(&posts,`select * from post where thread_id=$1`+filterSince+
+		`order by path `+order+filterLimit,
+		threadId,
+	)
+
+	//recursiveQuery := `with recursive r as (select *, CAST (id AS VARCHAR (50)) as NEWPATH, CAST (id AS VARCHAR (50)) as OLDPATH, id as LEVEL0 from "`+
+	//	postTable+`" where thread_id=$1 and parent=0`+
+	//	`union select p.*, CAST ( r.NEWPATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as NEWPATH, CAST (r.NEWPATH  AS VARCHAR (50)) as OLDPATH, LEVEL0 as LEVEL0 from "`+
+	//	postTable+ `" p inner join r on p.parent = r.id) `
+	//
+	//if since == -1 {
+	//	err := tx.Select(&posts, recursiveQuery+
+	//		`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
+	//		order+`, path `+order+filterLimit,
+	//		threadId,
+	//	)
+	//	checkErr(err)
+	//} else {
+	//	sign := ">"
+	//	resTable := `(select row_number() over(order by level0 `+order+`, path `+order+
+	//		`) as n, * from r order by LEVEL0 `+order+`, path `+order+`) r `
+	//	err :=tx.Select(&posts, recursiveQuery+
+	//		`select r.id, r.thread_id, r.parent, r.author, r.created, r.forum, r.isedited, r.message from `+resTable+
+	//		` where n `+sign+` (select r.n from `+resTable+` where id=$2)`+filterLimit,
+	//		threadId, since,
+	//	)
+	//	checkErr(err)
+	//}
 	if err != nil {
 		tx.Rollback()
 	}
@@ -149,15 +161,25 @@ func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since
 		filterId = getFilterId(order, int(parentSince))
 	}
 
-	recursiveQuery := `with recursive r as ( (select *, CAST (id AS VARCHAR (50)) as PATH, id as LEVEL0 from"`+
-		postTable+`" where thread_id=$1 and parent=0 `+filterId+`order by id `+order+filterLimit+
-		`) union (select p.*, CAST ( r.PATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as PATH, LEVEL0 as LEVEL0 from "`+
-		postTable+ `" p inner join r on p.parent = r.id) ) `
-	err = tx.Select(&posts, recursiveQuery+
-		`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
-		order+`, path`,
-		threadId,
-	)
+	//err = tx.Select(&posts, `select post.* from post `+`JOIN ( SELECT distinct parents.id FROM post AS parents
+	//WHERE parents.thread_id=$1 AND parents.parent=0 `+filterId+`order by id `+order+filterLimit+`
+	//) as p ON left(post.path, 7)=p.path`+`order by left(path, 7) `+order+`, path`,
+	//	threadId,
+	//)
+	err = tx.Select(&posts, `select * from post where left(path,8) in (select distinct parents.path from post as parents where `+
+		` parents.thread_id=$1 and parents.parent=0`+filterId+` order by path `+order+
+		filterLimit+`) order by left(path,8) `+order+`, path;`,
+		threadId)
+
+	//recursiveQuery := `with recursive r as ( (select *, CAST (id AS VARCHAR (50)) as NEWPATH, id as LEVEL0 from"`+
+	//	postTable+`" where thread_id=$1 and parent=0 `+filterId+`order by id `+order+filterLimit+
+	//	`) union (select p.*, CAST ( r.NEWPATH ||'->'|| p.id+10000000 AS VARCHAR(50)) as NEWPATH, LEVEL0 as LEVEL0 from "`+
+	//	postTable+ `" p inner join r on p.parent = r.id) ) `
+	//err = tx.Select(&posts, recursiveQuery+
+	//	`select id, thread_id, parent, author, created, forum, isedited, message from r order by LEVEL0 `+
+	//	order+`, newpath`,
+	//	threadId,
+	//)
 	if err != nil {
 		tx.Rollback()
 	}

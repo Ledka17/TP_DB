@@ -11,6 +11,7 @@ type Post struct {
 	Message		string		`db:"message" json:"message"`
 	Parent		int64		`db:"parent" json:"parent"`
 	ThreadId	int32		`db:"thread_id" json:"thread"`
+	Path		string		`db:"path" json:"-"`
 }
 
 type PostFull struct {
