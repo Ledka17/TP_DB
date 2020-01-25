@@ -11,9 +11,9 @@ type Repository interface {
 
 	IsPostInDB(id int) bool
 	GetPostInDB(id int) model.Post
-	GetPostsInDB(threadSlugOrId string, limit int, since int, sort string, desc bool) []model.Post
+	GetPostsInDB(threadId int32, limit int, since int, sort string, desc bool) []model.Post
 	ChangePostInDB(id int, update model.PostUpdate) (model.Post, error)
-	CreatePostsInDB(posts []model.Post, thread model.Thread) []model.Post
+	CreatePostsInDB(posts []model.Post, threadSlugOrId string) ([]model.Post, error)
 
 	CleanUp()
 	GetStatusDB() model.Status

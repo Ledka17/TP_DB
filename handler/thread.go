@@ -47,21 +47,19 @@ func (h *DataBaseHandler) CreateThreadPosts(c echo.Context) error {
 
 	slugOrId := c.Param("slug_or_id")
 
-	nicknames := make([]string, 0, len(posts))
-	for _, post := range posts {
-		nicknames = append(nicknames, post.Author)
-	}
-
-	foundThread := h.usecase.GetThreadInDB(slugOrId)
-	emptyThread := model.Thread{}
-	if foundThread != emptyThread && h.usecase.IsUsersInDB(nicknames) {
-		if h.usecase.CheckParentPost(posts, slugOrId) {
-			return c.JSON(201, h.usecase.CreatePostsInDB(posts, foundThread))
+	posts, err = h.usecase.CreatePostsInDB(posts, slugOrId)
+	if err != nil {
+		if err.Error() == "conflicts in posts" {
+			return writeWithError(c, 409, err.Error())
 		}
-		return writeWithError(c, 409, "have a conflicts in posts")
+		return writeWithError(c, 404, err.Error())
+		//if h.usecase.CheckParentPost(posts, slugOrId) {
+		//	return c.JSON(201, h.usecase.CreatePostsInDB(posts, foundThread))
+		//}
+		//return writeWithError(c, 409, "have a conflicts in posts")
 	}
 
-	return writeWithError(c, 404, "thread or users not found")
+	return c.JSON(201, posts)
 }
 
 func (h *DataBaseHandler) GetThreadDetails(c echo.Context) error {
@@ -112,8 +110,10 @@ func (h *DataBaseHandler) GetThreadPosts(c echo.Context) error {
 		desc, _ = strconv.ParseBool(c.QueryParam("desc"))
 	}
 
-	if h.usecase.IsThreadInDB(slugOrId) {
-		return c.JSON(200, h.usecase.GetPostsInDB(slugOrId, limit, since, sort, desc))
+	foundThread := h.usecase.GetThreadInDB(slugOrId)
+	emptyThread := model.Thread{}
+	if foundThread != emptyThread {
+		return c.JSON(200, h.usecase.GetPostsInDB(foundThread.Id, limit, since, sort, desc))
 	}
 	return writeWithError(c, 404, "thread not found")
 }

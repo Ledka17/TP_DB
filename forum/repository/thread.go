@@ -52,7 +52,6 @@ func (r *DatabaseRepository) CreateThreadInDB(thread model.Thread) model.Thread 
 	}
 	err = tx.Commit()
 	checkErr(err)
-	//r.incForumDetails("threads", thread.ForumId)
 	return thread
 }
 
@@ -98,7 +97,8 @@ func (r *DatabaseRepository) ChangeThreadInDB(threadUpdate model.ThreadUpdate, t
 	if threadUpdate.Title != "" || threadUpdate.Message != "" {
 		thread.Title = threadUpdate.Title
 		err := tx.QueryRow(
-			`update "`+threadTable+`" set title = coalesce(nullif($1, ''), title), message = coalesce(nullif($2, ''), message) where id=$3 returning title, message`,
+			`update "`+threadTable+
+				`" set title = coalesce(nullif($1, ''), title), message = coalesce(nullif($2, ''), message) where id=$3 returning title, message`,
 			threadUpdate.Title, threadUpdate.Message, thread.Id,
 		).Scan(&thread.Title, &thread.Message)
 		if err != nil {

@@ -36,7 +36,7 @@ func (r *DatabaseRepository) GetForumUsersInDB(slug string, limit int, since str
 	filterSince := getFilterSinceByUserName(order, since)
 
 	err := r.db.Select(&users, `select u.* from forum_user fu inner join "`+userTable+
-		`" u on fu.user_id = u.id where lower(fu.forum)=lower($1) `+filterSince+ ` order by lower(u.nickname) `+
+		`" u on fu.user_nickname = u.nickname where lower(fu.forum)=lower($1) `+filterSince+ ` order by lower(u.nickname) `+
 		order+filterLimit, slug)
 
 	checkErr(err)

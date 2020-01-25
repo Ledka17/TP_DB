@@ -3,7 +3,6 @@ package model
 type Post struct {
 	Id			int64		`db:"id" json:"id"`
 	Author		string		`db:"author" json:"author"`
-	UserId		int32		`db:"user_id" json:"-"`
 	Created		string		`db:"created" json:"created"`
 	Forum		string		`db:"forum" json:"forum"`
 	ForumId		int32		`db:"forum_id" json:"-"`
