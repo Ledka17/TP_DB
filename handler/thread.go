@@ -18,11 +18,9 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 		return writeWithError(c, 404, "user is empty")
 	}
 
-	foundUser := h.usecase.GetUserInDB(thread.Author)
-	emptyUser := model.User{}
 	foundForum := h.usecase.GetForumInDB(slug)
 	emptyForum := model.Forum{}
-	if foundForum == emptyForum || foundUser == emptyUser {
+	if foundForum == emptyForum || !h.usecase.IsUserInDB(thread.Author, "") {
 		return writeWithError(c, 404, "user or forum not found")
 	}
 
@@ -35,7 +33,6 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 	}
 	thread.Forum = foundForum.Slug
 	thread.ForumId = foundForum.Id
-	thread.UserId = foundUser.Id
 	return c.JSON(201, h.usecase.CreateThreadInDB(thread))
 }
 
