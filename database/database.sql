@@ -89,9 +89,8 @@ create table if not exists "forum_user"
     UNIQUE (forum, user_nickname)
 );
 
-create index post_forum_id_idx on post using btree (forum_id);
--- create index post_thread_id_idx on post using btree (thread_id);
--- create index post_user_id_idx on post using btree (user_id);
+create index post_forum_id_idx on post (forum_id);
+create index post_thread_id_idx on post (thread_id);
 -- create index post_forum_idx on post (forum);
 
 create index vote_thread_user_idx on vote (thread_id, nickname);
