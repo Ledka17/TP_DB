@@ -93,7 +93,7 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 	}
 
 	for i, post := range posts {
-		if !r.IsUserInDB(post.Author, "") {
+		if post.Author == "" || !r.IsUserInDB(post.Author, "") {
 			tx.Rollback()
 			return []model.Post{}, fmt.Errorf("user not found")
 		}
