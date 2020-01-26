@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Ledka17/TP_DB/model"
+	"strings"
 	"time"
 )
 
@@ -92,28 +93,64 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 		return posts, nil
 	}
 
+	columns := 6
+	queryValues := make([]string, len(posts))
+	args := make([]interface{}, 0, len(posts)*columns)
+
 	for i, post := range posts {
 		if post.Author == "" || !r.IsUserInDB(post.Author, "") {
 			tx.Rollback()
 			return []model.Post{}, fmt.Errorf("user not found")
 		}
-		if post.Parent <= 0 {
-			post.Parent = 0
-		}
 		post.ThreadId = curThread.Id
-		post.ForumId = curThread.ForumId
 		post.Created = created
 		post.Forum = curThread.Forum
 
-		err := tx.QueryRow(`insert into "`+postTable+`" (parent, message, created, forum_id, thread_id, forum, author) values ($1, $2, $3, $4, $5, $6, $7) returning id`,
-			post.Parent, post.Message, post.Created, post.ForumId, post.ThreadId, post.Forum, post.Author).Scan(&post.Id)
-		if err != nil {
-			tx.Rollback()
-			return posts, fmt.Errorf("conflicts in posts")
+		if post.Parent > 0 {
+			parentPost := r.GetPostInDB(int(post.Parent))
+			emptyPost := model.Post{}
+			if parentPost == emptyPost || parentPost.ThreadId != post.ThreadId {
+				tx.Rollback()
+				return posts, fmt.Errorf("conflicts in posts")
+			}
 		}
+
+		values := fmt.Sprintf(`($%d, $%d, $%d, $%d, $%d, $%d)`, i*columns+1,i*columns+2,i*columns+3,i*columns+4,i*columns+5,i*columns+6)
+		args = append(args, post.Parent, post.Message, post.Created, post.ThreadId, post.Forum, post.Author)
+
+		queryValues[i] = values
+		//err := tx.QueryRow(`insert into "`+postTable+`" (parent, message, created, thread_id, forum, author) values ($1, $2, $3, $4, $5, $6) returning id`,
+		//	post.Parent, post.Message, post.Created, post.ThreadId, post.Forum, post.Author).Scan(&post.Id)
+		//if err != nil {
+		//	tx.Rollback()
+		//	return posts, fmt.Errorf("conflicts in posts")
+		//}
 
 		posts[i] = post
 	}
+	queryStart := `INSERT INTO "`+postTable+`" (parent, message, created, thread_id, forum, author) values `
+	queryEnd := ` returning id`
+
+	rows, err := tx.Query(queryStart + strings.Join(queryValues, ", ") + queryEnd, args...)
+
+	//fmt.Println(err)
+	//fmt.Println(rows)
+	if err != nil {
+		tx.Rollback()
+		return posts, fmt.Errorf("conflicts in posts")
+	}
+	for i := range posts {
+		if rows.Next() {
+			err1 := rows.Scan(&posts[i].Id)
+			fmt.Println("test", posts[i])
+			fmt.Println("err", err1)
+		}
+	}
+	rows.Close()
+	//for i, _ := range posts {
+	//	posts[i].Id = postsId[i]
+	//}
+
 	tx.Commit()
 	return posts, nil
 }

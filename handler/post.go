@@ -28,7 +28,7 @@ func (h *DataBaseHandler) GetPostDetailsHandler(c echo.Context) error {
 			postFull.Author = &user
 		}
 		if checkInRelated("forum", related) {
-			forum := h.usecase.GetForumById(post.ForumId)
+			forum := h.usecase.GetForumInDB(post.Forum)
 			postFull.Forum = &forum
 		}
 		if checkInRelated("thread", related) {

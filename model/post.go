@@ -5,7 +5,6 @@ type Post struct {
 	Author		string		`db:"author" json:"author"`
 	Created		string		`db:"created" json:"created"`
 	Forum		string		`db:"forum" json:"forum"`
-	ForumId		int32		`db:"forum_id" json:"-"`
 	IsEdited	bool		`db:"isedited" json:"isEdited"`
 	Message		string		`db:"message" json:"message"`
 	Parent		int64		`db:"parent" json:"parent"`

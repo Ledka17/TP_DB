@@ -4,7 +4,7 @@ import "github.com/Ledka17/TP_DB/model"
 
 type Repository interface {
 	IsForumInDB(slug string) bool
-	GetForumById(id int32) model.Forum
+	//GetForumById(id int32) model.Forum
 	GetForumInDB(slug string) model.Forum
 	CreateForumInDB(forum model.Forum) model.Forum
 	GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User
