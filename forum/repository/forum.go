@@ -50,9 +50,9 @@ func (r *DatabaseRepository) GetForumIdBySlug(slug string) int32 {
 	return id
 }
 
-func (r *DatabaseRepository) GetForumById(id int32) model.Forum {
-	forumById := model.Forum{}
-	err := r.db.Get(&forumById, `select * from "`+forumTable+`" where id=$1`, id)
-	checkErr(err)
-	return forumById
-}
+//func (r *DatabaseRepository) GetForumById(id int32) model.Forum {
+//	forumById := model.Forum{}
+//	err := r.db.Get(&forumById, `select * from "`+forumTable+`" where id=$1`, id)
+//	checkErr(err)
+//	return forumById
+//}
