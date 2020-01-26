@@ -5,7 +5,6 @@ type Thread struct {
 	UserId		int32		`db:"user_id" json:"-"`
 	Created		string		`db:"created" json:"created"`
 	Forum		string		`db:"forum" json:"forum"`
-	ForumId		int32		`db:"forum_id" json:"-"`
 	Id			int32		`db:"id" json:"id"`
 	Message		string		`db:"message" json:"message"`
 	Slug		string		`db:"slug" json:"slug"`

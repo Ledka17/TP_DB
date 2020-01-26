@@ -32,7 +32,6 @@ func (h *DataBaseHandler) CreateThreadHandler(c echo.Context) error {
 		}
 	}
 	thread.Forum = foundForum.Slug
-	thread.ForumId = foundForum.Id
 	return c.JSON(201, h.usecase.CreateThreadInDB(thread))
 }
 
