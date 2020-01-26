@@ -126,7 +126,7 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 		posts[i] = post
 	}
 	queryStart := `INSERT INTO "`+postTable+`" (parent, message, created, thread_id, forum, author) values `
-	queryEnd := ` returning id`
+	queryEnd := ` returning id, created`
 
 	rows, err := tx.Query(queryStart + strings.Join(queryValues, ", ") + queryEnd, args...)
 
@@ -136,7 +136,7 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 	}
 	for i := range posts {
 		if rows.Next() {
-			err1 := rows.Scan(&posts[i].Id)
+			err1 := rows.Scan(&posts[i].Id, &posts[i].Created)
 			checkErr(err1)
 		}
 	}

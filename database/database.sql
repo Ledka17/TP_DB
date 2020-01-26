@@ -74,12 +74,13 @@ create unlogged table if not exists "vote"
 create table if not exists "forum_user"
 (
     forum           varchar not null,
-    user_nickname   varchar not null references "user" (nickname),
+    user_nickname   varchar not null, --references "user" (nickname),
     UNIQUE (forum, user_nickname)
 );
 
 -- Indexes
 
+create index post_id_idx on post (id);
 create index post_thread_id_idx on post (thread_id);
 -- create index post_forum_idx on post (forum);
 
