@@ -4,7 +4,6 @@ import "github.com/Ledka17/TP_DB/model"
 
 type Repository interface {
 	IsForumInDB(slug string) bool
-	//GetForumById(id int32) model.Forum
 	GetForumInDB(slug string) model.Forum
 	CreateForumInDB(forum model.Forum) model.Forum
 	GetForumUsersInDB(slug string, limit int, since string, desc bool) []model.User
@@ -31,7 +30,6 @@ type Repository interface {
 	GetThreadById(id int) model.Thread
 	CreateThreadInDB(thread model.Thread) model.Thread
 	GetThreadsForumInDB(forumSlug string, limit int, since string, desc bool) []model.Thread
-	//CheckParentPost(posts []model.Post, threadSlug string) bool
 	ChangeThreadInDB(threadUpdate model.ThreadUpdate, oldThread model.Thread) model.Thread
 
 	VoteForThreadInDB(slugOrId string, vote model.Vote) error

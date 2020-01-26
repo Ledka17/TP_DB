@@ -76,7 +76,6 @@ func (h *DataBaseHandler) GetForumUsersHandler(c echo.Context) error {
 	forumSlug := c.Param("slug")
 
 	if h.usecase.IsForumInDB(forumSlug) {
-		// podumat'
 		users := h.usecase.GetForumUsersInDB(forumSlug, limit, since, desc)
 		return c.JSON(200, users)
 	}
