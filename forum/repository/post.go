@@ -133,8 +133,6 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 
 	rows, err := tx.Query(queryStart + strings.Join(queryValues, ", ") + queryEnd, args...)
 
-	//fmt.Println(err)
-	//fmt.Println(rows)
 	if err != nil {
 		tx.Rollback()
 		return posts, fmt.Errorf("conflicts in posts")
@@ -142,14 +140,10 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 	for i := range posts {
 		if rows.Next() {
 			err1 := rows.Scan(&posts[i].Id)
-			fmt.Println("test", posts[i])
-			fmt.Println("err", err1)
+			checkErr(err1)
 		}
 	}
 	rows.Close()
-	//for i, _ := range posts {
-	//	posts[i].Id = postsId[i]
-	//}
 
 	tx.Commit()
 	return posts, nil
