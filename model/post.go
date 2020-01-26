@@ -1,9 +1,11 @@
 package model
 
+import "time"
+
 type Post struct {
 	Id			int64		`db:"id" json:"id"`
 	Author		string		`db:"author" json:"author"`
-	Created		string		`db:"created" json:"created"`
+	Created		time.Time	`db:"created" json:"created"`
 	Forum		string		`db:"forum" json:"forum"`
 	IsEdited	bool		`db:"isedited" json:"isEdited"`
 	Message		string		`db:"message" json:"message"`
