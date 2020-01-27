@@ -211,9 +211,12 @@ func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since
 	filterLimit := getFilterLimit(limit)
 
 	if since != -1 {
-		parentSince := r.getPostById(since).Parent
+		postSince := r.getPostById(since)
+		parentSince := postSince.Parent
 		if parentSince != 0 {
 			filterId = getFilterId(order, int(parentSince))
+		} else {
+			filterId = getFilterId(order, int(postSince.Id))
 		}
 	}
 
