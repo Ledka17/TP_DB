@@ -23,6 +23,7 @@ func (r *DatabaseRepository) GetPostInDB(id int) model.Post {
 }
 
 func (r *DatabaseRepository) GetPostsInDB(threadId int32, limit int, since int, sort string, desc bool) []model.Post {
+	fmt.Println("thread id =", threadId, "limit =", limit, "since =", since, "sort =", sort, "desc =", desc)
 	order := getOrder(desc)
 	switch sort {
 	case "flat", "":
@@ -211,7 +212,9 @@ func (r *DatabaseRepository) getPostsParentTree(threadId int32, limit int, since
 
 	if since != -1 {
 		parentSince := r.getPostById(since).Parent
-		filterId = getFilterId(order, int(parentSince))
+		if parentSince != 0 {
+			filterId = getFilterId(order, int(parentSince))
+		}
 	}
 
 	err = tx.Select(&posts, `select * from post where left(path,8) in (select distinct parents.path from post as parents where `+
