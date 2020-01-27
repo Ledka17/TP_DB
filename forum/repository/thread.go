@@ -42,16 +42,10 @@ func (r *DatabaseRepository) GetThreadById(id int) model.Thread {
 }
 
 func (r *DatabaseRepository) CreateThreadInDB(thread model.Thread) model.Thread {
-	tx, err := r.db.Beginx()
-	defer tx.Rollback()
-	err = tx.QueryRow(`insert into "`+threadTable+
+	err := r.db.QueryRow(`insert into "`+threadTable+
 		`" (title, slug, message, created, author, forum) values ($1, $2, $3, $4, $5, $6) returning id`,
 		thread.Title, thread.Slug, thread.Message, thread.Created, thread.Author, thread.Forum).
 		Scan(&thread.Id)
-	if err != nil {
-		tx.Rollback()
-	}
-	err = tx.Commit()
 	checkErr(err)
 	return thread
 }

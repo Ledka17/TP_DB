@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Ledka17/TP_DB/model"
 	"strings"
+	"time"
 )
 
 func (r *DatabaseRepository) IsPostInDB(id int) bool {
@@ -75,6 +76,7 @@ func (r *DatabaseRepository) ChangePostInDB(id int, update model.PostUpdate) (mo
 }
 
 func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId string) ([]model.Post, error) {
+	created := time.Now().Format(time.RFC3339)
 	tx, err := r.db.Beginx()
 	checkErr(err)
 	defer tx.Rollback()
@@ -100,6 +102,7 @@ func (r *DatabaseRepository) CreatePostsInDB(posts []model.Post, threadSlugOrId 
 			tx.Rollback()
 			return []model.Post{}, fmt.Errorf("user not found")
 		}
+		post.Created = created
 		post.ThreadId = curThread.Id
 		post.Forum = curThread.Forum
 
