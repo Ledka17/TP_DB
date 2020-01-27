@@ -23,7 +23,7 @@ func (r *DatabaseRepository) GetPostInDB(id int) model.Post {
 }
 
 func (r *DatabaseRepository) GetPostsInDB(threadId int32, limit int, since int, sort string, desc bool) []model.Post {
-	fmt.Println("thread id =", threadId, "limit =", limit, "since =", since, "sort =", sort, "desc =", desc)
+	//fmt.Println("thread id =", threadId, "limit =", limit, "since =", since, "sort =", sort, "desc =", desc)
 	order := getOrder(desc)
 	switch sort {
 	case "flat", "":
