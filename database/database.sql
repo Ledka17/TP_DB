@@ -55,9 +55,9 @@ create table if not exists "post"
     isEdited    bool        not null default false,
     parent      int         not null default 0, -- references "post" (id) on delete cascade on update restrict
         --CONSTRAINT post_parent_constraint CHECK (fn_check_parent_post_same_thread(parent)=thread_id),
-    path        text
+    path        text,
 
-    --foreign key (thread_id) references "thread" (id)
+    foreign key (thread_id) references "thread" (id)
     --foreign key (author) references "user" (nickname)
 
     --CONSTRAINT post_parent_constraint CHECK (fn_check_post_before_insert(parent, thread_id) = true)
