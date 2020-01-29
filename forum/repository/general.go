@@ -64,11 +64,11 @@ func getSign(order string) string {
 	return sign
 }
 
-func have(elem int64, array []int64) bool {
-	for _, current := range array {
-		if current == elem {
-			return true
-		}
-	}
-	return false
-}
+//func have(elem int64, array []int64) bool {
+//	for _, current := range array {
+//		if current == elem {
+//			return true
+//		}
+//	}
+//	return false
+//}
